@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Learning Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F4EF; --surface: #FFFFFF; --accent: #2D6A4F;
+      --accent-lt: #D8EEE4; --ink: #1A1A1A; --muted: #6B6B6B;
+      --border: #E0DAD0; --danger: #C0392B; --danger-lt: #FDECEA;
+      --warning: #B7600A; --warning-lt: #FEF3E2;
+      --radius: 14px; --shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--ink);
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 48px 20px 80px;
+    }
+    header { text-align: center; margin-bottom: 40px; }
+    .logo-dot {
+      width: 10px; height: 10px; background: var(--accent);
+      border-radius: 50%; display: inline-block;
+      margin-right: 6px; vertical-align: middle;
+    }
+    header h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 600; color: var(--ink);
+      line-height: 1.2; letter-spacing: -0.5px;
+    }
+    header p {
+      margin-top: 10px; font-size: 15px; color: var(--muted);
+      font-weight: 300; max-width: 380px;
+      margin-left: auto; margin-right: auto;
+    }
+    .card {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      width: 100%; max-width: 580px; padding: 36px;
+    }
+    .step-label {
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;
+    }
+    .selector-grid { display: grid; gap: 10px; margin-bottom: 24px; }
+    .selector-grid.two-col { grid-template-columns: 1fr 1fr; }
+    .selector-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
+    .option-btn {
+      padding: 14px 10px; border: 1.5px solid var(--border);
+      border-radius: 10px; background: var(--surface);
+      cursor: pointer; text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .option-btn:hover { border-color: var(--accent); background: var(--accent-lt); }
+    .option-btn.selected { border-color: var(--accent); background: var(--accent-lt); }
+    .option-btn.selected::after {
+      content: '✓'; position: absolute; top: 6px; right: 8px;
+      font-size: 11px; color: var(--accent); font-weight: 600;
+    }
+    .option-icon { font-size: 22px; margin-bottom: 6px; }
+    .option-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+    .option-desc { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: 10px;
+      padding: 40px 20px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s; position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragging { border-color: var(--accent); background: var(--accent-lt); }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0;
+      cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-icon {
+      width: 46px; height: 46px; background: var(--accent-lt);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; margin: 0 auto 12px;
+    }
+    .drop-icon svg {
+      width: 20px; height: 20px; stroke: var(--accent); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .drop-label { font-size: 14px; font-weight: 500; color: var(--ink); }
+    .drop-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .file-chosen {
+      display: none; margin-top: 12px; font-size: 13px;
+      color: var(--accent); font-weight: 500;
+      align-items: center; justify-content: center; gap: 6px;
+    }
+    .file-chosen.show { display: flex; }
+    .btn {
+      margin-top: 20px; width: 100%; padding: 14px;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 10px; font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 500; cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    #loading { display: none; margin-top: 24px; text-align: center; }
+    #loading.show { display: block; }
+    .spinner {
+      width: 34px; height: 34px; border: 3px solid var(--accent-lt);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-msg { font-size: 14px; color: var(--muted); font-style: italic; }
+    .loading-step { margin-top: 8px; font-size: 13px; color: var(--accent); font-weight: 500; }
+    #error-box {
+      display: none; margin-top: 16px; background: var(--danger-lt);
+      border: 1px solid #F5C6C2; border-radius: 10px;
+      padding: 12px 16px; font-size: 13px; color: var(--danger);
+    }
+    #error-box.show { display: block; }
+
+    /* ── Mismatch warning banner ── */
+    #mismatch-box {
+      display: none;
+      margin-top: 16px;
+      background: var(--warning-lt);
+      border: 1px solid #F5D89A;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    #mismatch-box.show { display: block; }
+    .mismatch-title {
+      font-size: 14px; font-weight: 500;
+      color: var(--warning); margin-bottom: 6px;
+    }
+    .mismatch-msg { font-size: 13px; color: #7A4A0A; margin-bottom: 12px; }
+    .mismatch-actions { display: flex; gap: 8px; }
+    .btn-switch {
+      flex: 1; padding: 9px;
+      background: var(--warning); color: #fff;
+      border: none; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-switch:hover { opacity: 0.88; }
+    .btn-continue {
+      flex: 1; padding: 9px;
+      background: transparent;
+      border: 1.5px solid var(--warning);
+      color: var(--warning); border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-continue:hover { background: var(--warning-lt); }
+
+    /* ── Notes output ── */
+    #notes-section {
+      display: none; margin-top: 32px;
+      width: 100%; max-width: 580px;
+      animation: fadeUp 0.4s ease;
+    }
+    #notes-section.show { display: block; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .notes-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+    }
+    .notes-title { font-family: 'Lora', serif; font-size: 20px; font-weight: 600; }
+    .notes-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .badge-subject { background: #E8F4FD; color: #1A6FA6; }
+    .badge-mode { background: var(--accent-lt); color: var(--accent); }
+    .badge-chunks { background: #F0F0F0; color: var(--muted); }
+    .notes-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 32px 36px;
+    }
+    .notes-card h2 {
+      font-family: 'Lora', serif; font-size: 18px; font-weight: 600;
+      color: var(--ink); margin: 32px 0 10px;
+      padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    }
+    .notes-card h2:first-child { margin-top: 0; }
+    .notes-card p { font-size: 14px; color: #2C2C2C; line-height: 1.8; margin-bottom: 10px; }
+    .notes-card ul { list-style: none; padding: 0; margin: 0 0 12px; }
+    .notes-card ul li {
+      font-size: 14px; color: #2C2C2C; line-height: 1.75;
+      padding: 3px 0 3px 20px; position: relative;
+    }
+    .notes-card ul li::before {
+      content: ''; position: absolute; left: 0; top: 13px;
+      width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+    }
+    .notes-card ul li ul { margin: 4px 0 4px 12px; }
+    .notes-card ul li ul li::before { background: transparent; border: 1.5px solid var(--accent); }
+    .notes-card pre {
+      background: #F4F4F4; border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px; font-size: 13px;
+      overflow-x: auto; margin: 10px 0 14px; line-height: 1.6;
+    }
+    .notes-card code {
+      font-family: 'Courier New', monospace; font-size: 13px;
+      background: #F0F0F0; padding: 2px 5px; border-radius: 4px;
+    }
+    .notes-card pre code { background: none; padding: 0; }
+    .notes-card hr { border: none; border-top: 1px dashed var(--border); margin: 24px 0; }
+    .notes-card strong { font-weight: 500; color: var(--ink); }
+    .notes-actions { margin-top: 20px; display: flex; gap: 10px; }
+    .btn-outline {
+      flex: 1; padding: 11px; background: transparent;
+      border: 1.5px solid var(--accent); color: var(--accent);
+      border-radius: 10px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-outline:hover { background: var(--accent-lt); }
+    footer { margin-top: 48px; font-size: 12px; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div style="margin-bottom:14px">
+      <span class="logo-dot"></span>
+      <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;">AI Learning Assistant</span>
+    </div>
+    <h1>Smart notes for<br><em>PU Science students</em></h1>
+    <p>Upload your chapter PDF — get clear, exam-ready notes instantly.</p>
+  </header>
+
+  <div class="card">
+
+    <!-- Step 1: Subject -->
+    <div class="step-label">Step 1 — Choose your subject</div>
+    <div class="selector-grid two-col">
+      <div class="option-btn selected" data-group="subject" data-value="physics" onclick="selectOption(this)">
+        <div class="option-icon">⚡</div>
+        <div class="option-name">Physics</div>
+        <div class="option-desc">Laws, formulas, numericals</div>
+      </div>
+      <div class="option-btn" data-group="subject" data-value="biology" onclick="selectOption(this)">
+        <div class="option-icon">🧬</div>
+        <div class="option-name">Biology</div>
+        <div class="option-desc">Definitions, processes, diagrams</div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- Step 2: Mode -->
+    <div class="step-label">Step 2 — How do you want to study?</div>
+    <div class="selector-grid three-col">
+      <div class="option-btn selected" data-group="mode" data-value="beginner" onclick="selectOption(this)">
+        <div class="option-icon">🌱</div>
+        <div class="option-name">Beginner</div>
+        <div class="option-desc">Simple language, easy examples</div>
+      </div>
+      <div class="option-btn" data-group="mode" data-value="exam" onclick="selectOption(this)">
+        <div class="option-icon">📝</div>
+        <div class="option-name">Exam Ready</div>
+        <div class="option-desc">Key points + exam questions</div>
+      </div>
+      <div class="option-btn" data-group="mode" data-value="deep" onclick="selectOption(this)">
+        <div class="option-icon">🔬</div>
+        <div class="option-name">Deep Dive</div>
+        <div class="option-desc">Full explanation, why it works</div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- Step 3: Upload -->
+    <div class="step-label">Step 3 — Upload your PDF</div>
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="pdf-input" accept=".pdf"/>
+      <div class="drop-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <div class="drop-label">Drop your PDF here</div>
+      <div class="drop-sub">or click to browse • max 16MB</div>
+    </div>
+
+    <div class="file-chosen" id="file-chosen">
+      ✓ <span id="file-name">file.pdf</span>
+    </div>
+
+    <!-- Mismatch warning -->
+    <div id="mismatch-box">
+      <div class="mismatch-title">⚠️ Subject mismatch detected</div>
+      <div class="mismatch-msg" id="mismatch-msg"></div>
+      <div class="mismatch-actions">
+        <button class="btn-switch" id="btn-switch" onclick="switchSubject()"></button>
+        <button class="btn-continue" onclick="proceedWithUpload()">Continue anyway</button>
+      </div>
+    </div>
+
+    <button class="btn" id="upload-btn" disabled onclick="handleUploadClick()">
+      Generate Study Notes
+    </button>
+
+    <!-- Loading -->
+    <div id="loading">
+      <div class="spinner"></div>
+      <div class="loading-msg">Reading your PDF and generating notes…</div>
+      <div class="loading-step" id="loading-step">Extracting text from PDF</div>
+    </div>
+
+    <!-- Error -->
+    <div id="error-box"></div>
+  </div>
+
+  <!-- Notes output -->
+  <div id="notes-section">
+    <div class="notes-header">
+      <div class="notes-title">Your Study Notes</div>
+      <div class="notes-meta">
+        <span class="badge badge-subject" id="badge-subject"></span>
+        <span class="badge badge-mode" id="badge-mode"></span>
+        <span class="badge badge-chunks" id="badge-chunks"></span>
+      </div>
+    </div>
+    <div class="notes-card" id="notes-output"></div>
+    <div class="notes-actions">
+      <button class="btn-outline" onclick="copyNotes()">Copy Notes</button>
+      <button class="btn-outline" onclick="resetPage()">Upload Another</button>
+    </div>
+  </div>
+
+  <footer>Notes are generated only from your uploaded material &mdash; nothing is stored on our servers.</footer>
+
+  <script>
+    let detectedSubject = null;
+    let currentFile = null;
+
+    // ── Option selector ──
+    function selectOption(el) {
+      const group = el.dataset.group;
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      // Hide mismatch warning if subject is changed manually
+      if (group === 'subject') hideMismatch();
+    }
+
+    function getSelected(group) {
+      const el = document.querySelector(`[data-group="${group}"].selected`);
+      return el ? el.dataset.value : null;
+    }
+
+    // ── File handling ──
+    const input    = document.getElementById('pdf-input');
+    const dropZone = document.getElementById('drop-zone');
+    const btn      = document.getElementById('upload-btn');
+
+    input.addEventListener('change', () => {
+      if (input.files[0]) setFile(input.files[0]);
+    });
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragging');
+      const f = e.dataTransfer.files[0];
+      if (f && f.type === 'application/pdf') setFile(f);
+      else showError('Please drop a PDF file.');
+    });
+
+    function setFile(f) {
+      currentFile = f;
+      input._file = f;
+      document.getElementById('file-name').textContent = f.name;
+      document.getElementById('file-chosen').classList.add('show');
+      btn.disabled = false;
+      hideError();
+      hideMismatch();
+      detectedSubject = null;
+    }
+
+    // ── Loading steps ──
+    const steps = [
+      'Extracting text from PDF',
+      'Splitting into sections',
+      'Generating notes for each section',
+      'Almost done…'
+    ];
+    let stepIndex = 0, stepTimer;
+
+    function startSteps() {
+      stepIndex = 0;
+      document.getElementById('loading-step').textContent = steps[0];
+      stepTimer = setInterval(() => {
+        stepIndex = Math.min(stepIndex + 1, steps.length - 1);
+        document.getElementById('loading-step').textContent = steps[stepIndex];
+      }, 5000);
+    }
+    function stopSteps() { clearInterval(stepTimer); }
+
+    // ── Main click handler — detect first, then upload ──
+    async function handleUploadClick() {
+      const file = input._file || input.files[0];
+      if (!file) return;
+
+      const subject = getSelected('subject');
+      hideMismatch();
+      hideError();
+
+      // Run subject detection silently
+      const formData = new FormData();
+      formData.append('pdf_file', file);
+      formData.append('subject', subject);
+
+      try {
+        const res = await fetch('/detect-subject', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (!data.match && data.detected !== 'unknown') {
+          // Show mismatch warning — don't proceed yet
+          detectedSubject = data.detected;
+          showMismatch(data.detected, data.selected);
+          return;
+        }
+      } catch (e) {
+        // Detection failed silently — just proceed
+      }
+
+      // No mismatch — proceed with upload
+      proceedWithUpload();
+    }
+
+    // ── Mismatch warning ──
+    function showMismatch(detected, selected) {
+      const box = document.getElementById('mismatch-box');
+      const msg = document.getElementById('mismatch-msg');
+      const switchBtn = document.getElementById('btn-switch');
+
+      const detectedLabel = detected.charAt(0).toUpperCase() + detected.slice(1);
+      const selectedLabel = selected.charAt(0).toUpperCase() + selected.slice(1);
+
+      msg.textContent = `Your PDF looks like ${detectedLabel} content, but you selected ${selectedLabel}. Switching will give you better notes.`;
+      switchBtn.textContent = `Switch to ${detectedLabel}`;
+      box.classList.add('show');
+    }
+
+    function hideMismatch() {
+      document.getElementById('mismatch-box').classList.remove('show');
+    }
+
+    function switchSubject() {
+      if (!detectedSubject) return;
+      // Select the detected subject button
+      const btn = document.querySelector(`[data-group="subject"][data-value="${detectedSubject}"]`);
+      if (btn) selectOption(btn);
+      hideMismatch();
+      proceedWithUpload();
+    }
+
+    // ── Actual upload ──
+    async function proceedWithUpload() {
+      const file = input._file || input.files[0];
+      const subject = getSelected('subject');
+      const mode = getSelected('mode');
+
+      if (!file) return;
+
+      hideMismatch();
+      btn.disabled = true;
+      document.getElementById('loading').classList.add('show');
+      document.getElementById('notes-section').classList.remove('show');
+      hideError();
+      startSteps();
+
+      const formData = new FormData();
+      formData.append('pdf_file', file);
+      formData.append('subject', subject);
+      formData.append('mode', mode);
+
+      try {
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        stopSteps();
+        document.getElementById('loading').classList.remove('show');
+
+        if (!res.ok || data.error) {
+          showError(data.error || 'Something went wrong. Please try again.');
+          btn.disabled = false;
+          return;
+        }
+
+        document.getElementById('notes-output').innerHTML = data.notes;
+        document.getElementById('badge-subject').textContent = data.subject;
+        document.getElementById('badge-mode').textContent = data.mode;
+        document.getElementById('badge-chunks').textContent = data.chunk_count + ' sections';
+        document.getElementById('notes-section').classList.add('show');
+        document.getElementById('notes-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        stopSteps();
+        document.getElementById('loading').classList.remove('show');
+        showError('Network error. Please check your connection and try again.');
+        btn.disabled = false;
+      }
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('error-box');
+      box.textContent = msg;
+      box.classList.add('show');
+    }
+    function hideError() { document.getElementById('error-box').classList.remove('show'); }
+
+    function copyNotes() {
+      const text = document.getElementById('notes-output').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const b = document.querySelectorAll('.btn-outline')[0];
+        b.textContent = 'Copied!';
+        setTimeout(() => b.textContent = 'Copy Notes', 2000);
+      });
+    }
+
+    function resetPage() {
+      document.getElementById('notes-section').classList.remove('show');
+      document.getElementById('file-chosen').classList.remove('show');
+      hideMismatch();
+      btn.disabled = true;
+      input.value = '';
+      input._file = null;
+      currentFile = null;
+      detectedSubject = null;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+
+</body>
+</html>
