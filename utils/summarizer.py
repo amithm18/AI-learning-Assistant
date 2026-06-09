@@ -30,49 +30,18 @@ def clean_model_output(text):
     return text.strip()
 
 
-# ── Subject auto detection ────────────────────────────────────────────────────
+# ── Subject auto detection stub ────────────────────────────────────────────────
 
 def detect_subject(chunks):
     """
-    Detect the subject of the PDF from the first chunk.
-    Returns 'physics', 'biology', or 'unknown'.
-    Uses a tiny API call — only first 400 words, 10 output tokens max.
+    Stub detection function, since subject is now fixed to Computer Science.
     """
-    if not chunks:
-        return "unknown"
-
-    # Use only first chunk, max 400 words to keep tokens minimal
-    sample = " ".join(chunks[0].split()[:400])
-
-    prompt = f"""Read this text and reply with ONLY one word — either 'physics' or 'biology'.
-Choose 'physics' if the text contains laws of motion, forces, energy, electricity, optics, waves, thermodynamics, or similar physics topics.
-Choose 'biology' if the text contains cells, organisms, genetics, evolution, photosynthesis, human body systems, or similar biology topics.
-If you are not sure, reply 'unknown'.
-Reply with ONE word only. No explanation.
-
-TEXT:
-{sample}"""
-
-    try:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
-            max_tokens=5,
-        )
-        result = response.choices[0].message.content.strip().lower()
-        if result in ["physics", "biology"]:
-            return result
-        return "unknown"
-
-    except Exception as e:
-        print(f"Subject detection failed: {e}")
-        return "unknown"
+    return "computer_science"
 
 
 # ── Main entry point ──────────────────────────────────────────────────────────
 
-def generate_notes(chunks, subject="physics", mode="beginner"):
+def generate_notes(chunks, subject="computer_science", mode="beginner"):
     all_notes = []
     for i, chunk in enumerate(chunks):
         print(f"Processing chunk {i + 1} of {len(chunks)}...")
@@ -89,8 +58,8 @@ def summarize_chunk(text, subject, mode):
     mode_instructions = get_mode_instructions(mode)
     format_instructions = get_format_instructions(mode)
 
-    prompt = f"""You are an expert study notes generator for PU (Pre-University) students in India.
-You are helping a student who does NOT know how to use AI — your notes must be clear, complete, and self-explanatory.
+    prompt = f"""You are an expert study notes generator for PU (Pre-University) students in India studying Computer Science.
+You are helping a student who does NOT know how to use AI — your notes must be clear, complete, self-explanatory, and preserve code block layout.
 
 SUBJECT: {subject_context}
 MODE: {mode_instructions}
@@ -99,8 +68,9 @@ STRICT RULES — never break these:
 1. ONLY use information from the TEXT below. Do not add anything from outside knowledge.
 2. Skip anything unclear or missing. Do not mention that you skipped it.
 3. Start directly with the first ## heading. No introduction, no conclusion, no meta commentary.
-4. Technical terms must always stay in English exactly as written.
-5. Do NOT hallucinate formulas, values, or facts not present in the text.
+4. Technical terms and programming statements must stay exactly as written.
+5. Do NOT hallucinate variables, syntax, or facts not present in the text.
+6. When code, algorithms, or syntax examples are present in the text, write them inside code blocks with the appropriate markdown language identifier (e.g. ```python, ```java, ```cpp, ```html, or ```).
 
 {format_instructions}
 
@@ -126,21 +96,14 @@ TEXT:
 # ── Subject contexts ──────────────────────────────────────────────────────────
 
 def get_subject_context(subject):
-    contexts = {
-        "physics": (
-            "Physics — PU level. "
-            "When present in the text, always include: laws with their exact statements, "
-            "formulas with all variables explained, units of measurement, "
-            "and numerical examples if available."
-        ),
-        "biology": (
-            "Biology — PU level. "
-            "When present in the text, always include: exact definitions of terms, "
-            "step-by-step processes, names of scientists or discoverers, "
-            "and real-life examples or applications if available."
-        ),
-    }
-    return contexts.get(subject, "General Science — PU level.")
+    return (
+        "Computer Science — topics like programming, data structures, algorithms, "
+        "computer networks, operating systems, database management, and computer architecture. "
+        "When present in the text, always include: key algorithms with step-by-step logic, "
+        "code syntax/snippets (properly formatted), data structure definitions and their operations, "
+        "time and space complexities (Big O notation), diagram descriptions (like block diagrams or network topologies), "
+        "and clear explanations of system components or design patterns."
+    )
 
 
 # ── Mode instructions ─────────────────────────────────────────────────────────
@@ -148,22 +111,23 @@ def get_subject_context(subject):
 def get_mode_instructions(mode):
     modes = {
         "beginner": (
-            "BEGINNER MODE — The student is reading this topic for the first time. "
-            "Use the simplest possible language. Explain every term. "
-            "Use real-life comparisons where the text supports it. "
-            "Do not assume any prior knowledge."
+            "BEGINNER MODE — The student is learning this computer science topic for the first time. "
+            "Use simple, conversational language. Explain all jargon, acronyms, and technical terms. "
+            "Use everyday analogies to make abstract programming/hardware concepts intuitive. "
+            "Write clear comments for any code blocks, explaining what each line does. "
+            "Do not assume any prior coding or system knowledge."
         ),
         "exam": (
-            "EXAM MODE — The student is preparing for their PU board exam. "
-            "Focus strictly on what is most likely to be asked in an exam. "
-            "Be concise and precise. Include definitions, laws, formulas, and diagrams descriptions. "
-            "Add a short 'Likely Exam Questions' section at the end of each topic."
+            "EXAM MODE — The student is preparing for their computer science board exam. "
+            "Focus strictly on high-yield exam topics: precise definitions, syntax rules, exact code snippets, "
+            "key differences (e.g. Stack vs Queue), algorithms step-by-step, and complexity values. "
+            "Include a short 'Likely Exam Questions' section at the end of each topic (e.g., 2-mark definitions and 5-mark code/system descriptions)."
         ),
         "deep": (
-            "DEEP UNDERSTANDING MODE — The student wants to fully understand the topic, not just memorize. "
-            "Explain the 'why' and 'how' behind every concept. "
-            "Connect ideas together where the text supports it. "
-            "Include all details, examples, and reasoning present in the text."
+            "DEEP UNDERSTANDING MODE — The student wants to master the core principles of the computer science topic. "
+            "Explain the 'why' and 'how' behind concepts (e.g., how recursion affects the stack memory, memory leaks, performance trade-offs). "
+            "Analyze time and space complexity in detail. "
+            "Provide fully explained code examples with trace tables or step-by-step execution flow."
         ),
     }
     return modes.get(mode, modes["beginner"])
@@ -176,21 +140,21 @@ def get_format_instructions(mode):
         return """OUTPUT FORMAT — follow exactly:
 
 ## Topic Name
-[2-3 simple sentences explaining what this topic is and why it matters. Use simple everyday language.]
+[2-3 simple sentences explaining what this topic is and why it matters in Computer Science. Use simple everyday analogies.]
 
-**Key Points:**
-- First key point as a short clear sentence
-- Second key point as a short clear sentence
-  - Sub point if needed, indented with two spaces
-- Third key point as a short clear sentence
+**Key Concepts:**
+- First key concept as a short clear sentence
+- Second key concept as a short clear sentence
+  - Detailed sub-point if needed
+- Third key concept as a short clear sentence
 
 **In Simple Words:**
-[One analogy or real-life comparison that makes this concept easy to remember. Only include if the text supports it.]
+[One analogy or real-world comparison that makes this CS concept easy to understand, e.g., memory like post boxes.]
 
-**Formula / Definition (if present in text):**
-```
-Write the exact formula or definition here
-Explain each variable or term on a new line
+**Code Snippet / Definition (if present in text):**
+```[language]
+Write the code snippet, pseudocode, or definition here.
+Explain each key line or term on a new line.
 ```
 
 ---"""
@@ -201,16 +165,15 @@ Explain each variable or term on a new line
 ## Topic Name
 [One line: what this topic is about.]
 
-**Key Points:**
-- First key point as a short clear sentence
-- Second key point as a short clear sentence
-  - Sub point if needed
-- Third key point as a short clear sentence
+**Key Points & Definitions:**
+- Precise definition of terms
+- Key differences or features (e.g. key-value pairs, characteristics)
+- Algorithm steps or syntax rules
 
-**Important Formula / Law / Definition (if present in text):**
-```
-Exact formula, law statement, or definition
-Variable meanings if applicable
+**Important Code / Algorithm / Definition (if present in text):**
+```[language]
+Exact code, algorithm steps, or syntax template.
+Explain crucial parts briefly.
 ```
 
 **Likely Exam Questions:**
@@ -223,25 +186,24 @@ Variable meanings if applicable
         return """OUTPUT FORMAT — follow exactly:
 
 ## Topic Name
-[2-3 sentences: what this topic is, why it exists, and what problem it solves.]
+[2-3 sentences: what this topic is, why it is designed this way, and what problem it solves in system design or computation.]
 
-**Detailed Explanation:**
-- First concept explained in full
-- Second concept explained in full
-  - Sub detail if needed
-- Third concept explained in full
+**Detailed Analysis:**
+- First concept explained in full detail
+- Second concept explained in full detail
+  - Complexity analysis or design trade-offs
+- Third concept explained in full detail
 
-**Formula / Process / Definition (if present in text):**
+**Code Snippet / Process / Architecture (if present in text):**
+```[language]
+Complete code snippet, execution trace, or architectural process steps.
 ```
-Exact formula or step-by-step process
-Full explanation of each component
-```
 
-**Why This Works:**
-[1-2 sentences explaining the reasoning or principle behind this concept. Only if supported by the text.]
+**Why This Works & Under the Hood:**
+[1-2 sentences explaining the underlying execution mechanism or hardware/memory behavior.]
 
-**Real World Application (if present in text):**
-[One real world use case or example from the text.]
+**Real World Application / Use Case (if present in text):**
+[One real world scenario where this concept is applied, e.g. web routing, database indexing.]
 
 ---"""
 
