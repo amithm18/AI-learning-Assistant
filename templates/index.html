@@ -20,7 +20,9 @@
       --border: rgba(255, 255, 255, 0.08);
       --border-hover: rgba(99, 102, 241, 0.4);
       --danger: #EF4444;
-      --danger-lt: rgba(239, 68, 68, 0.1);
+      --danger-lt: rgba(239, 68, 68, 0.15);
+      --success: #10B981;
+      --success-lt: rgba(16, 185, 129, 0.15);
       --radius: 16px;
       --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       --glow: 0 0 20px rgba(99, 102, 241, 0.35);
@@ -134,6 +136,43 @@
 
     .card:hover {
       border-color: rgba(99, 102, 241, 0.15);
+    }
+
+    /* Tab Switcher Styles */
+    .tabs-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .btn-tab {
+      flex: 1;
+      padding: 12px;
+      background: rgba(17, 24, 39, 0.4);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-tab:hover {
+      border-color: var(--border-hover);
+      color: var(--ink);
+    }
+
+    .btn-tab.active {
+      background: var(--accent-lt);
+      border-color: var(--accent);
+      color: #818CF8;
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
     }
 
     .step-label {
@@ -601,6 +640,103 @@
       transform: translateY(-1px);
     }
 
+    /* ── Interactive Quiz Section Styles ── */
+    #quiz-section {
+      display: none;
+      margin-top: 36px;
+      width: 100%;
+      max-width: 620px;
+      animation: fadeUp 0.5s ease;
+      z-index: 10;
+    }
+
+    #quiz-section.show {
+      display: block;
+    }
+
+    .quiz-question-card {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .quiz-question-text {
+      font-size: 16.5px;
+      font-weight: 600;
+      color: #FFF;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .quiz-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .quiz-option-item {
+      padding: 15px 18px;
+      background: rgba(17, 24, 39, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #D1D5DB;
+      font-size: 14.5px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .quiz-option-item:hover:not(.disabled) {
+      border-color: var(--border-hover);
+      background: rgba(99, 102, 241, 0.05);
+      transform: translateX(4px);
+    }
+
+    .quiz-option-item.correct {
+      border-color: var(--success) !important;
+      background: var(--success-lt) !important;
+      color: #34D399 !important;
+      font-weight: 600;
+    }
+
+    .quiz-option-item.incorrect {
+      border-color: var(--danger) !important;
+      background: var(--danger-lt) !important;
+      color: #F87171 !important;
+      font-weight: 600;
+    }
+
+    .quiz-option-item.disabled {
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
+    .quiz-explanation-box {
+      margin-top: 18px;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px 8px 8px 4px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+      display: none;
+      animation: fadeIn 0.35s;
+    }
+
+    .quiz-explanation-box strong {
+      color: #FFF;
+      display: block;
+      margin-bottom: 6px;
+    }
+
     footer {
       margin-top: 56px;
       font-size: 13px;
@@ -618,35 +754,42 @@
       <span class="logo-text">AI Learning Assistant</span>
     </div>
     <h1>Smart notes for<br><em>Computer Science</em></h1>
-    <p>Upload your chapter PDF — get clear, formatted study notes instantly.</p>
+    <p>Upload your chapter PDF — get clear notes or take practice quizzes instantly.</p>
   </header>
 
   <div class="card">
 
-    <!-- Step 1: Mode -->
-    <div class="step-label">Step 1 — How do you want to study?</div>
-    <div class="selector-grid three-col">
-      <div class="option-btn selected" data-group="mode" data-value="beginner" onclick="selectOption(this)">
-        <div class="option-icon">🌱</div>
-        <div class="option-name">Beginner</div>
-        <div class="option-desc">Simple explanation, basic analogies</div>
-      </div>
-      <div class="option-btn" data-group="mode" data-value="exam" onclick="selectOption(this)">
-        <div class="option-icon">📝</div>
-        <div class="option-name">Exam Ready</div>
-        <div class="option-desc">Key points + exam questions</div>
-      </div>
-      <div class="option-btn" data-group="mode" data-value="deep" onclick="selectOption(this)">
-        <div class="option-icon">🔬</div>
-        <div class="option-name">Deep Dive</div>
-        <div class="option-desc">Trace flows, complexities, why it works</div>
-      </div>
+    <!-- Tab Switcher -->
+    <div class="tabs-container">
+      <button id="tab-notes" class="btn-tab active" onclick="switchTab('notes')">📝 Study Notes</button>
+      <button id="tab-quiz" class="btn-tab" onclick="switchTab('quiz')">⚡ Interactive Quiz</button>
     </div>
 
-    <hr class="divider"/>
+    <!-- Step 1: Mode -->
+    <div id="step-1-container">
+      <div class="step-label">Step 1 — How do you want to study?</div>
+      <div class="selector-grid three-col">
+        <div class="option-btn selected" data-group="mode" data-value="beginner" onclick="selectOption(this)">
+          <div class="option-icon">🌱</div>
+          <div class="option-name">Beginner</div>
+          <div class="option-desc">Simple explanation, basic analogies</div>
+        </div>
+        <div class="option-btn" data-group="mode" data-value="exam" onclick="selectOption(this)">
+          <div class="option-icon">📝</div>
+          <div class="option-name">Exam Ready</div>
+          <div class="option-desc">Key points + exam questions</div>
+        </div>
+        <div class="option-btn" data-group="mode" data-value="deep" onclick="selectOption(this)">
+          <div class="option-icon">🔬</div>
+          <div class="option-name">Deep Dive</div>
+          <div class="option-desc">Trace flows, complexities, why it works</div>
+        </div>
+      </div>
+      <hr class="divider" id="divider-1"/>
+    </div>
 
     <!-- Step 2: Upload -->
-    <div class="step-label">Step 2 — Upload your PDF</div>
+    <div class="step-label" id="upload-step-label">Step 2 — Upload your PDF</div>
     <div class="drop-zone" id="drop-zone">
       <input type="file" id="pdf-input" accept=".pdf"/>
       <div class="drop-icon">
@@ -671,7 +814,7 @@
     <!-- Loading -->
     <div id="loading">
       <div class="spinner"></div>
-      <div class="loading-msg">Analyzing computer science PDF and crafting notes…</div>
+      <div class="loading-msg" id="loading-msg">Analyzing computer science PDF and crafting notes…</div>
       <div class="loading-step" id="loading-step">Extracting content structure</div>
     </div>
 
@@ -696,10 +839,55 @@
     </div>
   </div>
 
+  <!-- Quiz output -->
+  <div id="quiz-section">
+    <div class="notes-header">
+      <div class="notes-title">Interactive Practice Quiz</div>
+      <div class="notes-meta">
+        <span class="badge badge-subject">Computer Science</span>
+        <span class="badge badge-mode" id="badge-quiz-score">Score: 0/5</span>
+      </div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="notes-actions">
+      <button class="btn-outline" onclick="resetPage()">Upload Another</button>
+    </div>
+  </div>
+
   <footer>Notes are generated only from your uploaded materials &mdash; built for CS students.</footer>
 
   <script>
     let currentFile = null;
+    let currentTab = 'notes';
+    let quizData = [];
+    let userScore = 0;
+    let questionsAnswered = 0;
+
+    // ── Tab Switcher ──
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      
+      const step1 = document.getElementById('step-1-container');
+      const uploadStepLabel = document.getElementById('upload-step-label');
+      const uploadBtn = document.getElementById('upload-btn');
+      
+      if (tab === 'notes') {
+        step1.style.display = 'block';
+        uploadStepLabel.textContent = 'Step 2 — Upload your PDF';
+        uploadBtn.textContent = 'Generate CS Study Notes';
+      } else {
+        step1.style.display = 'none';
+        uploadStepLabel.textContent = 'Step 1 — Upload your PDF';
+        uploadBtn.textContent = 'Generate Interactive Quiz';
+      }
+      
+      // Reset any existing outputs
+      document.getElementById('notes-section').classList.remove('show');
+      document.getElementById('quiz-section').classList.remove('show');
+      hideError();
+    }
 
     // ── Option selector ──
     function selectOption(el) {
@@ -742,22 +930,32 @@
     }
 
     // ── Loading steps ──
-    const steps = [
+    const notesSteps = [
       'Extracting text & formatting from PDF',
       'Grouping syntax structures & paragraphs',
       'Analyzing algorithms and concepts',
       'Generating study notes with code snippets',
       'Formatting code blocks & highlighting…'
     ];
+
+    const quizSteps = [
+      'Extracting text & formatting from PDF',
+      'Identifying high-yield topics & keywords',
+      'Generating exam-style quiz questions',
+      'Formulating correct answers & explanations',
+      'Assembling interactive quiz interface…'
+    ];
+
     let stepIndex = 0, stepTimer;
 
     function startSteps() {
       stepIndex = 0;
-      document.getElementById('loading-step').textContent = steps[0];
+      const stepsList = currentTab === 'notes' ? notesSteps : quizSteps;
+      document.getElementById('loading-step').textContent = stepsList[0];
       stepTimer = setInterval(() => {
-        stepIndex = Math.min(stepIndex + 1, steps.length - 1);
-        document.getElementById('loading-step').textContent = steps[stepIndex];
-      }, 4500);
+        stepIndex = Math.min(stepIndex + 1, stepsList.length - 1);
+        document.getElementById('loading-step').textContent = stepsList[stepIndex];
+      }, 4000);
     }
     function stopSteps() { clearInterval(stepTimer); }
 
@@ -769,22 +967,36 @@
     // ── Actual upload ──
     async function proceedWithUpload() {
       const file = input._file || input.files[0];
-      const mode = getSelected('mode');
-
       if (!file) return;
 
       btn.disabled = true;
       document.getElementById('loading').classList.add('show');
       document.getElementById('notes-section').classList.remove('show');
+      document.getElementById('quiz-section').classList.remove('show');
+      
+      const loadingMsg = document.getElementById('loading-msg');
+      if (currentTab === 'notes') {
+        loadingMsg.textContent = 'Analyzing computer science PDF and crafting notes…';
+      } else {
+        loadingMsg.textContent = 'Analyzing computer science PDF and crafting quiz questions…';
+      }
+      
       hideError();
       startSteps();
 
       const formData = new FormData();
       formData.append('pdf_file', file);
-      formData.append('mode', mode);
+
+      let targetUrl = '/upload';
+      if (currentTab === 'notes') {
+        const mode = getSelected('mode');
+        formData.append('mode', mode);
+      } else {
+        targetUrl = '/quiz';
+      }
 
       try {
-        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const res = await fetch(targetUrl, { method: 'POST', body: formData });
         const data = await res.json();
 
         stopSteps();
@@ -796,12 +1008,18 @@
           return;
         }
 
-        document.getElementById('notes-output').innerHTML = data.notes;
-        document.getElementById('badge-subject').textContent = data.subject;
-        document.getElementById('badge-mode').textContent = data.mode;
-        document.getElementById('badge-chunks').textContent = data.chunk_count + ' sections';
-        document.getElementById('notes-section').classList.add('show');
-        document.getElementById('notes-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (currentTab === 'notes') {
+          document.getElementById('notes-output').innerHTML = data.notes;
+          document.getElementById('badge-subject').textContent = data.subject;
+          document.getElementById('badge-mode').textContent = data.mode;
+          document.getElementById('badge-chunks').textContent = data.chunk_count + ' sections';
+          document.getElementById('notes-section').classList.add('show');
+          document.getElementById('notes-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          renderQuiz(data.quiz);
+          document.getElementById('quiz-section').classList.add('show');
+          document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
       } catch (err) {
         stopSteps();
@@ -809,6 +1027,82 @@
         showError('Network error. Please check your backend connection.');
         btn.disabled = false;
       }
+    }
+
+    // ── Quiz Renderer ──
+    function renderQuiz(questions) {
+      quizData = questions;
+      userScore = 0;
+      questionsAnswered = 0;
+      
+      document.getElementById('badge-quiz-score').textContent = 'Score: 0/' + questions.length;
+      
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+      
+      questions.forEach((q, qIdx) => {
+        const qCard = document.createElement('div');
+        qCard.className = 'quiz-question-card';
+        
+        const qText = document.createElement('div');
+        qText.className = 'quiz-question-text';
+        qText.textContent = `${qIdx + 1}. ${q.question}`;
+        qCard.appendChild(qText);
+        
+        const optionsList = document.createElement('div');
+        optionsList.className = 'quiz-options-list';
+        
+        q.options.forEach((opt, oIdx) => {
+          const optItem = document.createElement('div');
+          optItem.className = 'quiz-option-item';
+          optItem.textContent = opt;
+          optItem.onclick = () => selectQuizOption(qIdx, oIdx);
+          optionsList.appendChild(optItem);
+        });
+        
+        qCard.appendChild(optionsList);
+        
+        const expBox = document.createElement('div');
+        expBox.className = 'quiz-explanation-box';
+        expBox.id = `explanation-${qIdx}`;
+        expBox.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
+        qCard.appendChild(expBox);
+        
+        container.appendChild(qCard);
+      });
+    }
+
+    function selectQuizOption(qIdx, selectedIdx) {
+      const q = quizData[qIdx];
+      const correctIdx = q.answer_idx;
+      
+      const card = document.getElementsByClassName('quiz-question-card')[qIdx];
+      const optionItems = card.getElementsByClassName('quiz-option-item');
+      
+      // If already answered, do nothing
+      if (optionItems[0].classList.contains('disabled')) return;
+      
+      // Disable all options
+      for (let i = 0; i < optionItems.length; i++) {
+        optionItems[i].classList.add('disabled');
+      }
+      
+      if (selectedIdx === correctIdx) {
+        // Correct choice
+        optionItems[selectedIdx].classList.add('correct');
+        userScore++;
+      } else {
+        // Incorrect choice
+        optionItems[selectedIdx].classList.add('incorrect');
+        optionItems[correctIdx].classList.add('correct');
+      }
+      
+      questionsAnswered++;
+      document.getElementById('badge-quiz-score').textContent = `Score: ${userScore}/${quizData.length}`;
+      
+      // Reveal explanation
+      const expBox = document.getElementById(`explanation-${qIdx}`);
+      expBox.style.display = 'block';
     }
 
     function showError(msg) {
@@ -830,6 +1124,7 @@
 
     function resetPage() {
       document.getElementById('notes-section').classList.remove('show');
+      document.getElementById('quiz-section').classList.remove('show');
       document.getElementById('file-chosen').classList.remove('show');
       btn.disabled = true;
       input.value = '';

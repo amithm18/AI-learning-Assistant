@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from utils.pdf_reader import extract_text_from_pdf
-from utils.summarizer import generate_notes
+from utils.summarizer import generate_notes, generate_quiz
 from dotenv import load_dotenv
 import markdown
 import os
@@ -69,6 +69,45 @@ def upload_file():
             "chunk_count": len(chunks),
             "subject": "Computer Science",
             "mode": mode_labels.get(mode, mode)
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Something went wrong: {str(e)}"}), 500
+
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+
+@app.route("/quiz", methods=["POST"])
+def generate_quiz_route():
+    if "pdf_file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files["pdf_file"]
+
+    if file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
+
+    if not allowed_file(file.filename):
+        return jsonify({"error": "Only PDF files are allowed"}), 400
+
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], f"quiz_{file.filename}")
+
+    try:
+        file.save(file_path)
+
+        chunks = extract_text_from_pdf(file_path)
+        if not chunks:
+            return jsonify({"error": "Could not extract text from this PDF."}), 400
+
+        quiz_questions = generate_quiz(chunks)
+        if not quiz_questions:
+            return jsonify({"error": "Failed to generate quiz. Please try again."}), 500
+
+        return jsonify({
+            "quiz": quiz_questions,
+            "chunk_count": len(chunks)
         }), 200
 
     except Exception as e:

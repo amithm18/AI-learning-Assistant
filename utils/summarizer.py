@@ -208,3 +208,92 @@ Complete code snippet, execution trace, or architectural process steps.
 ---"""
 
     return ""
+
+
+# ── Interactive Quiz Generation ──────────────────────────────────────────────
+
+import json
+
+def generate_quiz(chunks):
+    """
+    Generate exactly 5 multiple choice questions spread evenly across the text chunks.
+    """
+    if not chunks:
+        return []
+
+    num_questions = 5
+    num_chunks = len(chunks)
+    questions = []
+
+    if num_chunks >= num_questions:
+        # Select 5 chunks spread evenly
+        indices = [int(i * (num_chunks - 1) / (num_questions - 1)) for i in range(num_questions)]
+        indices = sorted(list(set(indices)))
+        
+        # Pad indices to size 5 if duplicate math reduced the count
+        for i in range(num_chunks):
+            if len(indices) >= num_questions:
+                break
+            if i not in indices:
+                indices.append(i)
+        indices.sort()
+
+        for idx in indices:
+            qs = _generate_questions_from_chunk(chunks[idx], count=1)
+            if qs:
+                questions.extend(qs)
+    else:
+        # Distribute questions among fewer chunks
+        questions_per_chunk = [0] * num_chunks
+        for i in range(num_questions):
+            questions_per_chunk[i % num_chunks] += 1
+
+        for idx, count in enumerate(questions_per_chunk):
+            if count > 0:
+                qs = _generate_questions_from_chunk(chunks[idx], count=count)
+                if qs:
+                    questions.extend(qs)
+
+    # Return exactly 5 questions
+    return questions[:num_questions]
+
+
+def _generate_questions_from_chunk(chunk, count=1):
+    """
+    Calls Groq Llama 3.3 70B in JSON mode to generate MCQs from a chunk.
+    """
+    prompt = f"""You are an expert Computer Science exam question generator.
+Based ONLY on the text below, generate exactly {count} multiple-choice question(s) that could appear in a computer science exam.
+
+TEXT:
+{chunk}
+
+You must return your response in JSON format matching this schema:
+{{
+  "questions": [
+    {{
+      "question": "The question text here",
+      "options": [
+        "Option A text",
+        "Option B text",
+        "Option C text",
+        "Option D text"
+      ],
+      "answer_idx": 0, // 0-indexed integer (0 for A, 1 for B, 2 for C, 3 for D) indicating the correct answer
+      "explanation": "A detailed explanation of why the correct option is right based on the text."
+    }}
+  ]
+}}
+"""
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        )
+        data = json.loads(response.choices[0].message.content)
+        return data.get("questions", [])
+    except Exception as e:
+        print(f"Error generating quiz question: {e}")
+        return []
