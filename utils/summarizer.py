@@ -58,6 +58,9 @@ def detect_subject(chunks):
 def generate_notes(chunks, subject="computer_science", mode="beginner"):
     all_notes = []
     for i, chunk in enumerate(chunks):
+        if i > 0:
+            import time
+            time.sleep(2.0)  # Avoid hitting API Rate Limits (RPM)
         print(f"Processing chunk {i + 1} of {len(chunks)}...")
         notes = summarize_chunk(chunk, subject, mode)
         if notes:
@@ -254,7 +257,10 @@ def generate_quiz(chunks):
                 indices.append(i)
         indices.sort()
 
-        for idx in indices:
+        for step_idx, idx in enumerate(indices):
+            if step_idx > 0:
+                import time
+                time.sleep(6.0)  # Avoid hitting API Rate Limits (RPM)
             qs = _generate_questions_from_chunk(chunks[idx], count=1)
             if qs:
                 questions.extend(qs)
@@ -264,8 +270,13 @@ def generate_quiz(chunks):
         for i in range(num_questions):
             questions_per_chunk[i % num_chunks] += 1
 
+        called_count = 0
         for idx, count in enumerate(questions_per_chunk):
             if count > 0:
+                if called_count > 0:
+                    import time
+                    time.sleep(6.0)  # Avoid hitting API Rate Limits (RPM)
+                called_count += 1
                 qs = _generate_questions_from_chunk(chunks[idx], count=count)
                 if qs:
                     questions.extend(qs)

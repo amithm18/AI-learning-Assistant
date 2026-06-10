@@ -24,14 +24,14 @@ def extract_text_from_pdf(pdf_path):
         return []
 
     # 1. Group lines into logical blocks
-    # Max words per block is 600
-    blocks = _group_lines_into_blocks(structured_lines, max_words=600)
+    # Max words per block is 2000
+    blocks = _group_lines_into_blocks(structured_lines, max_words=2000)
 
     # 2. Determine threshold score for headings
     min_score = 2 if has_size_variation else 1
 
     # 3. Group blocks into chunks
-    chunks = _chunk_blocks(blocks, min_score=min_score, max_words=600)
+    chunks = _chunk_blocks(blocks, min_score=min_score, max_words=2000)
 
     # Clean up and filter out empty or extremely small chunks (less than 10 words)
     cleaned_chunks = []
@@ -133,7 +133,7 @@ def _extract_structured_lines(pdf_path):
     return all_lines, body_size, has_size_variation
 
 
-def _group_lines_into_blocks(structured_lines, max_words=600):
+def _group_lines_into_blocks(structured_lines, max_words=2000):
     """
     Group lines into logical paragraph blocks.
     A new block is started when a heading is encountered, when paragraph start is detected,
@@ -160,7 +160,7 @@ def _group_lines_into_blocks(structured_lines, max_words=600):
     return blocks
 
 
-def _chunk_blocks(blocks, min_score, max_words=600):
+def _chunk_blocks(blocks, min_score, max_words=2000):
     """
     Group blocks of lines into chunks up to max_words, ensuring newlines and spacing are preserved.
     """
@@ -182,7 +182,7 @@ def _chunk_blocks(blocks, min_score, max_words=600):
         # Start a new chunk if:
         # 1. Heading block is found and current chunk is already somewhat filled (avoid tiny chunks)
         # 2. Or, adding this block would exceed the target word size
-        if (is_heading and current_word_count >= 150) or \
+        if (is_heading and current_word_count >= 500) or \
            (current_word_count + block_words > max_words and current_chunk_blocks):
             
             # Emit current chunk
