@@ -58,41 +58,221 @@ def detect_subject(chunks):
     return "computer_science"
 
 
+# ── Language constraints selector ─────────────────────────────────────────────
+
+def get_language_instructions(language):
+    if language == "kanglish":
+        return """LANGUAGE & TRANSLITERATION CONSTRAINTS (CRITICAL):
+- Explain all concepts using a conversational, everyday mix of Kannada and English (Kanglish) written ONLY using English letters (Latin script).
+- Write in the style of a friendly, expert senior teaching a junior student in college. Use common, conversational Kannada words (e.g. 'madthare', 'barutthe', 'hege', 'yake andre', 'nodona', 'tumba', 'sikkapatte') naturally.
+- Write Kannada words using ONLY English alphabets (Latin characters). For example, write "ee topic thumba important" instead of "ಈ ಟಾಪಿಕ್ ತುಂಬಾ ಇಂಪಾರ್ಟೆಂಟ್".
+- DO NOT use any Kannada script (Kannada alphabets/characters like ಕನ್ನಡ).
+- Keep all technical terms, code keywords, variable names, functions, operators, and core programming concepts strictly in standard English (e.g. "loop", "variables", "CPU", "memory", "recursion", "array").
+- CRITICAL: You must preserve all Markdown formatting (like ## headings, **bold** labels, newlines, lists, and code blocks) exactly as specified in the OUTPUT FORMAT.
+- Each bullet point must be on a new line starting with `- ` or `  - `. Do not collapse them into a single line or paragraph."""
+    else:
+        return """LANGUAGE CONSTRAINTS (CRITICAL):
+- Explain all concepts strictly in standard, grammatically correct English.
+- Write in the style of a clear, friendly, and expert computer science tutor.
+- Keep all descriptions, headings, analogies, and notes strictly in standard English.
+- CRITICAL: You must preserve all Markdown formatting (like ## headings, **bold** labels, newlines, lists, and code blocks) exactly as specified in the OUTPUT FORMAT.
+- Each bullet point must be on a new line starting with `- ` or `  - `. Do not collapse them into a single line or paragraph."""
+
+
 # ── Main entry point ──────────────────────────────────────────────────────────
 
-def generate_notes(chunks, subject="computer_science", mode="beginner"):
+def generate_notes(chunks, subject="computer_science", mode="beginner", language="kanglish"):
     all_notes = []
     for i, chunk in enumerate(chunks):
         if i > 0:
             import time
             time.sleep(2.0)  # Avoid hitting API Rate Limits (RPM)
         print(f"Processing chunk {i + 1} of {len(chunks)}...")
-        notes = summarize_chunk(chunk, subject, mode)
+        notes = summarize_chunk(chunk, subject, mode, language)
         if notes:
             all_notes.append(notes)
     return "\n\n---\n\n".join(all_notes)
 
 
+# ── Few-shot formatting examples ──────────────────────────────────────────────
+
+def get_few_shot_example(mode, language):
+    if language == "kanglish":
+        if mode == "beginner":
+            return """FEW-SHOT FORMATTING EXAMPLE (CRITICAL - match this style, spacing, and newlines exactly):
+
+## What is a Queue?
+Queue andre computer science nalli ondu linear data structure. Elements na order nalli place madoke idhanna use madthare. Idhu elements na queue type list nalli store madutthe.
+
+**Key Concepts:**
+- **FIFO Principle:** First In First Out structure. Line nalli yaaru first niltharo, avrige ticket first sigutthe.
+- **Insert Operation (Enqueue):** Elements na standard queue end nalli insert madodu.
+- **Delete Operation (Dequeue):** Queue starting position inda element remove madodu.
+
+**In Simple Words:**
+Ondu cinema hall ticket line nodi. Line nalli first bandavnge ticket first sigutthe (Dequeue), matte hosa janaru line end ge add agthare (Enqueue).
+
+**Code Snippet / Definition (if present in text):**
+```cpp
+// Dequeue (Remove element from front)
+void dequeue() {
+    if (front == -1) {
+        cout << "Queue Empty";
+    } else {
+        front++;
+    }
+}
+```
+
+---"""
+        elif mode == "exam":
+            return """FEW-SHOT FORMATTING EXAMPLE (CRITICAL - match this style, spacing, and newlines exactly):
+
+## Queue Data Structure
+Queue operations and basic board definitions.
+
+**Key Points & Definitions:**
+- **Definition:** Queue is a linear data structure working on FIFO (First In First Out) principle.
+- **Enqueue:** Process of adding an element to the rear end of the queue. Complexity is O(1).
+- **Dequeue:** Process of deleting an element from the front end of the queue. Complexity is O(1).
+
+**Important Code / Algorithm / Definition (if present in text):**
+```cpp
+// Standard Enqueue Operation
+void enqueue(int element) {
+    if (rear == MAX - 1) {
+        cout << "Queue Overflow";
+    } else {
+        if (front == -1) front = 0;
+        rear++;
+        queue[rear] = element;
+    }
+}
+```
+
+**Likely Exam Questions:**
+- **2-Mark Question:** What is Queue? Mention the principle on which it works.
+- **5-Mark Question:** Explain the Enqueue and Dequeue operations with neat algorithm steps.
+
+---"""
+        else: # deep
+            return """FEW-SHOT FORMATTING EXAMPLE (CRITICAL - match this style, spacing, and newlines exactly):
+
+## What is a Queue?
+Queue andre computer science nalli ondu linear data structure. Elements na ordered list nalli sequential processing ge organize madoke idhu use agutthe. FIFO design patterns implement madakke idhanna use madthare.
+
+**Detailed Analysis:**
+- **FIFO Principle:** First entry in, first exit. First in-flight request first process agutthe.
+- **Basic Operations:**
+  - **Enqueue:** Back side end segment inda elements na queue ge add madoke.
+  - **Dequeue:** Front side segment inda elements na queue inda remove madoke.
+- **Memory Management:** Memory allocation array storage (static) or pointer linking (dynamic) irabahudu.
+
+**Why This Works & Under the Hood:**
+Queue sequential processing and flow synchronization manage madutthe. CPU task scheduling, print buffering, and asynchronous packet transmission nalli idhu core structure aagi behave madutthe.
+
+**Real World Application / Use Case (if present in text):**
+Operating system processes priority scheduling nalli buffers use madi messages store madoke queue use madthare.
+
+---"""
+    else: # English
+        if mode == "beginner":
+            return """FEW-SHOT FORMATTING EXAMPLE (CRITICAL - match this style, spacing, and newlines exactly):
+
+## What is a Queue?
+A Queue is a linear data structure in computer science. It is used to place elements in a specific order, storing elements in a list-like sequential structure.
+
+**Key Concepts:**
+- **FIFO Principle:** First In First Out structure. The first person in line is the first to be served.
+- **Insert Operation (Enqueue):** Adding new items to the tail or rear end of the queue.
+- **Delete Operation (Dequeue):** Removing items from the head or front of the queue.
+
+**In Simple Words:**
+Think of a movie ticket counter line. The person who stands first gets the ticket first (Dequeue), and new people join the line at the very end (Enqueue).
+
+**Code Snippet / Definition (if present in text):**
+```cpp
+// Dequeue (Remove element from front)
+void dequeue() {
+    if (front == -1) {
+        cout << "Queue Empty";
+    } else {
+        front++;
+    }
+}
+```
+
+---"""
+        elif mode == "exam":
+            return """FEW-SHOT FORMATTING EXAMPLE (CRITICAL - match this style, spacing, and newlines exactly):
+
+## Queue Data Structure
+Standard definitions and operations for exams.
+
+**Key Points & Definitions:**
+- **Definition:** Queue is a linear data structure working on FIFO (First In First Out) principle.
+- **Enqueue:** Operation of inserting an element to the rear end of the queue. Complexity is O(1).
+- **Dequeue:** Operation of removing an element from the front end of the queue. Complexity is O(1).
+
+**Important Code / Algorithm / Definition (if present in text):**
+```cpp
+// Standard Enqueue Operation
+void enqueue(int element) {
+    if (rear == MAX - 1) {
+        cout << "Queue Overflow";
+    } else {
+        if (front == -1) front = 0;
+        rear++;
+        queue[rear] = element;
+    }
+}
+```
+
+**Likely Exam Questions:**
+- **2-Mark Question:** What is Queue? Mention the principle on which it works.
+- **5-Mark Question:** Explain the Enqueue and Dequeue operations with neat algorithm steps.
+
+---"""
+        else: # deep
+            return """FEW-SHOT FORMATTING EXAMPLE (CRITICAL - match this style, spacing, and newlines exactly):
+
+## What is a Queue?
+A Queue is a linear data structure in computer science that stores elements in an ordered list. It operates on the FIFO (First In First Out) principle, meaning that the element inserted first is the one that gets removed first.
+
+**Detailed Analysis:**
+- **FIFO Principle:** The first element added is the first to be processed, similar to a real-world ticket line.
+- **Basic Operations:**
+  - **Enqueue:** Adding an element to the rear of the queue.
+  - **Dequeue:** Removing an element from the front of the queue.
+- **Memory Management:** Queue memory allocation can be either static (using arrays) or dynamic (using pointers).
+
+**Why This Works & Under the Hood:**
+Queues follow sequential access logic. This structure is essential for CPU task scheduling, printer spooling, and network buffering where order of arrival must be preserved.
+
+**Real World Application / Use Case (if present in text):**
+Operating systems use queues to store incoming messages or manage priority processing in task buffers.
+
+---"""
+
+
 # ── Prompt selector ───────────────────────────────────────────────────────────
 
-def summarize_chunk(text, subject, mode):
+def summarize_chunk(text, subject, mode, language="kanglish"):
     subject_context = get_subject_context(subject)
     mode_instructions = get_mode_instructions(mode)
     format_instructions = get_format_instructions(mode)
+    language_instructions = get_language_instructions(language)
+    few_shot_example = get_few_shot_example(mode, language)
 
     prompt = f"""You are an expert study notes generator for PU (Pre-University) students in India studying Computer Science.
 You are helping a student who does NOT know how to use AI — your notes must be clear, complete, self-explanatory, and preserve code block layout.
 
-LANGUAGE & TRANSLITERATION CONSTRAINTS (CRITICAL):
-- Explain all concepts using a conversational, everyday mix of Kannada and English (Kanglish).
-- Write Kannada words using ONLY English alphabets (Latin characters). For example, write "ee topic thumba important" instead of "ಈ ಟಾಪಿಕ್ ತುಂಬಾ ಇಂಪಾರ್ಟೆಂಟ್".
-- DO NOT use any Kannada script (Kannada alphabets/characters like ಕನ್ನಡ).
-- Keep all technical terms, code keywords, variable names, functions, operators, and core programming concepts strictly in standard English (e.g. "loop", "variables", "CPU", "memory", "recursion", "array").
-- CRITICAL: You must preserve all Markdown formatting (like ## headings, **bold** labels, newlines, lists, and code blocks) exactly as specified in the OUTPUT FORMAT.
-- Each bullet point must be on a new line starting with `- ` or `  - `. Do not collapse them into a single line or paragraph.
+{language_instructions}
 
 SUBJECT: {subject_context}
 MODE: {mode_instructions}
+
+{few_shot_example}
 
 STRICT RULES — never break these:
 1. ONLY use information from the TEXT below. Do not add anything from outside knowledge.
@@ -103,6 +283,10 @@ STRICT RULES — never break these:
 6. When code, algorithms, or syntax examples are present in the text, write them inside code blocks with the appropriate markdown language identifier (e.g. ```python, ```java, ```cpp, ```html, or ```).
 7. Never output any Kannada script/characters. Use only English letters.
 8. Follow the markdown format EXACTLY. Write headings with `##`, use double asterisks for labels, and ensure every list item starts on a new line. Do not merge bullet points.
+9. Identify and silently discard any page numbers, header/footer text, or corrupted OCR lines from the source TEXT. Do not let them interrupt the flow of the notes.
+10. If a topic is cut off or incomplete in the text, summarize the available part clearly and self-containedly without inventing facts.
+11. If comments are added inside code blocks, write them in simple English (or simple Kanglish/English mix if Kanglish is selected).
+12. Merge duplicate points into a single concise note under the relevant concept. Do not repeat the same information.
 
 {format_instructions}
 
@@ -302,7 +486,7 @@ def generate_quiz(chunks):
 
 def _generate_questions_from_chunk(chunk, count=1):
     """
-    Calls Groq Llama 3.3 70B in JSON mode to generate MCQs from a chunk.
+    Calls Gemini 2.5 Flash in JSON mode to generate MCQs from a chunk.
     """
     prompt = f"""You are an expert Computer Science exam question generator.
 Based ONLY on the text below, generate exactly {count} multiple-choice question(s) that could appear in a computer science exam.

@@ -765,10 +765,10 @@
       <button id="tab-quiz" class="btn-tab" onclick="switchTab('quiz')">⚡ Interactive Quiz</button>
     </div>
 
-    <!-- Step 1: Mode -->
+    <!-- Step 1: Mode & Language -->
     <div id="step-1-container">
       <div class="step-label">Step 1 — How do you want to study?</div>
-      <div class="selector-grid three-col">
+      <div class="selector-grid three-col" style="margin-bottom: 20px;">
         <div class="option-btn selected" data-group="mode" data-value="beginner" onclick="selectOption(this)">
           <div class="option-icon">🌱</div>
           <div class="option-name">Beginner</div>
@@ -785,6 +785,21 @@
           <div class="option-desc">Trace flows, complexities, why it works</div>
         </div>
       </div>
+
+      <div class="step-label">Select Explanation Language</div>
+      <div class="selector-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+        <div class="option-btn selected" data-group="language" data-value="kanglish" onclick="selectOption(this)">
+          <div class="option-icon">🗣️</div>
+          <div class="option-name">Kanglish</div>
+          <div class="option-desc">Kannada + English conversational mix</div>
+        </div>
+        <div class="option-btn" data-group="language" data-value="english" onclick="selectOption(this)">
+          <div class="option-icon">🇬🇧</div>
+          <div class="option-name">English</div>
+          <div class="option-desc">Standard English explanation</div>
+        </div>
+      </div>
+
       <hr class="divider" id="divider-1"/>
     </div>
 
@@ -829,6 +844,7 @@
       <div class="notes-meta">
         <span class="badge badge-subject" id="badge-subject"></span>
         <span class="badge badge-mode" id="badge-mode"></span>
+        <span class="badge badge-mode" id="badge-language" style="background: rgba(16, 185, 129, 0.12); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.25);"></span>
         <span class="badge badge-chunks" id="badge-chunks"></span>
       </div>
     </div>
@@ -990,7 +1006,9 @@
       let targetUrl = '/upload';
       if (currentTab === 'notes') {
         const mode = getSelected('mode');
+        const language = getSelected('language') || 'kanglish';
         formData.append('mode', mode);
+        formData.append('language', language);
       } else {
         targetUrl = '/quiz';
       }
@@ -1012,6 +1030,7 @@
           document.getElementById('notes-output').innerHTML = data.notes;
           document.getElementById('badge-subject').textContent = data.subject;
           document.getElementById('badge-mode').textContent = data.mode;
+          document.getElementById('badge-language').textContent = data.language;
           document.getElementById('badge-chunks').textContent = data.chunk_count + ' sections';
           document.getElementById('notes-section').classList.add('show');
           document.getElementById('notes-section').scrollIntoView({ behavior: 'smooth', block: 'start' });

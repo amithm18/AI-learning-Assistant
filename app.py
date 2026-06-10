@@ -33,6 +33,7 @@ def upload_file():
 
     file = request.files["pdf_file"]
     mode = request.form.get("mode", "beginner").lower()
+    language = request.form.get("language", "kanglish").lower()
 
     if file.filename == "":
         return jsonify({"error": "No file selected"}), 400
@@ -43,6 +44,9 @@ def upload_file():
     if mode not in ["beginner", "exam", "deep"]:
         return jsonify({"error": "Invalid mode selected"}), 400
 
+    if language not in ["kanglish", "english"]:
+        return jsonify({"error": "Invalid language selected"}), 400
+
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
 
     try:
@@ -52,7 +56,7 @@ def upload_file():
         if not chunks:
             return jsonify({"error": "Could not extract text from this PDF. It may be scanned or image-based."}), 400
 
-        raw_notes = generate_notes(chunks, subject="computer_science", mode=mode)
+        raw_notes = generate_notes(chunks, subject="computer_science", mode=mode, language=language)
         if not raw_notes:
             return jsonify({"error": "Failed to generate notes. Please try again."}), 500
 
@@ -64,11 +68,17 @@ def upload_file():
             "deep": "Deep Dive"
         }
 
+        language_labels = {
+            "kanglish": "Kanglish",
+            "english": "English"
+        }
+
         return jsonify({
             "notes": notes_html,
             "chunk_count": len(chunks),
             "subject": "Computer Science",
-            "mode": mode_labels.get(mode, mode)
+            "mode": mode_labels.get(mode, mode),
+            "language": language_labels.get(language, language)
         }), 200
 
     except Exception as e:
