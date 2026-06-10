@@ -744,6 +744,143 @@
       text-align: center;
       z-index: 10;
     }
+
+    /* ── Custom Audio Player ── */
+    .audio-player-container {
+      background: rgba(17, 24, 39, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .audio-player-container:hover {
+      border-color: rgba(99, 102, 241, 0.25);
+      background: rgba(17, 24, 39, 0.6);
+    }
+
+    .audio-player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .player-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .player-status {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .audio-controls-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .player-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .player-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: var(--glow);
+    }
+
+    .player-btn:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .progress-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .progress-bar-bg {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent-gradient);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.1s linear;
+      position: relative;
+    }
+
+    .audio-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Sound wave animation */
+    .audio-wave {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 20px;
+      width: 30px;
+      flex-shrink: 0;
+    }
+
+    .wave-bar {
+      width: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      height: 20%;
+      transition: height 0.1s ease;
+    }
+
+    .audio-wave.playing .wave-bar {
+      animation: wave 1.2s ease-in-out infinite alternate;
+    }
+
+    .audio-wave.playing .wave-bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
+    .audio-wave.playing .wave-bar:nth-child(2) { animation-delay: 0.3s; height: 80%; }
+    .audio-wave.playing .wave-bar:nth-child(3) { animation-delay: 0.6s; height: 40%; }
+    .audio-wave.playing .wave-bar:nth-child(4) { animation-delay: 0.2s; height: 90%; }
+    .audio-wave.playing .wave-bar:nth-child(5) { animation-delay: 0.4s; height: 50%; }
+
+    @keyframes wave {
+      0% { height: 20%; }
+      100% { height: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -832,7 +969,44 @@
         <span class="badge badge-chunks" id="badge-chunks"></span>
       </div>
     </div>
-    <div class="notes-card" id="notes-output"></div>
+    <div class="notes-card">
+      <!-- Audio Player Container -->
+      <div class="audio-player-container" id="audio-player-container">
+        <div class="audio-player-header">
+          <span class="player-title">🔊 Audio Explanation</span>
+          <span class="player-status" id="player-status">Click play to listen</span>
+        </div>
+        <div class="audio-controls-row">
+          <button class="player-btn" id="audio-play-btn" onclick="toggleAudio()">
+            <svg class="play-icon" id="audio-play-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg class="pause-icon" id="audio-pause-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="display: none;">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
+          
+          <div class="progress-container">
+            <div class="progress-bar-bg" id="audio-progress-bg" onclick="seekAudio(event)">
+              <div class="progress-bar-fill" id="audio-progress-fill"></div>
+            </div>
+            <div class="audio-time">
+              <span id="audio-current-time">0:00</span>
+              <span id="audio-total-time">0:00</span>
+            </div>
+          </div>
+          
+          <div class="audio-wave" id="audio-wave">
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+          </div>
+        </div>
+      </div>
+      <div id="notes-output"></div>
+    </div>
     <div class="notes-actions">
       <button class="btn-outline" onclick="copyNotes()">Copy Notes</button>
       <button class="btn-outline" onclick="resetPage()">Upload Another</button>
@@ -863,8 +1037,14 @@
     let userScore = 0;
     let questionsAnswered = 0;
 
+    // Audio Player State Variables
+    let audioObj = null;
+    let audioUrl = null;
+    let isGeneratingAudio = false;
+
     // ── Tab Switcher ──
     function switchTab(tab) {
+      resetAudio();
       currentTab = tab;
       document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
       document.getElementById(`tab-${tab}`).classList.add('active');
@@ -966,6 +1146,7 @@
 
     // ── Actual upload ──
     async function proceedWithUpload() {
+      resetAudio();
       const file = input._file || input.files[0];
       if (!file) return;
 
@@ -1123,6 +1304,7 @@
     }
 
     function resetPage() {
+      resetAudio();
       document.getElementById('notes-section').classList.remove('show');
       document.getElementById('quiz-section').classList.remove('show');
       document.getElementById('file-chosen').classList.remove('show');
@@ -1131,6 +1313,154 @@
       input._file = null;
       currentFile = null;
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Audio Player Functions ──
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return '0:00';
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function resetAudio() {
+      if (audioObj) {
+        audioObj.pause();
+        audioObj = null;
+      }
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+        audioUrl = null;
+      }
+      isGeneratingAudio = false;
+      
+      // Reset UI elements
+      const statusText = document.getElementById('player-status');
+      if (statusText) statusText.textContent = 'Click play to listen';
+      
+      const playBtn = document.getElementById('audio-play-btn');
+      if (playBtn) playBtn.disabled = false;
+      
+      const playIcon = document.getElementById('audio-play-icon');
+      if (playIcon) playIcon.style.display = 'block';
+      
+      const pauseIcon = document.getElementById('audio-pause-icon');
+      if (pauseIcon) pauseIcon.style.display = 'none';
+      
+      const progressFill = document.getElementById('audio-progress-fill');
+      if (progressFill) progressFill.style.width = '0%';
+      
+      const curTime = document.getElementById('audio-current-time');
+      if (curTime) curTime.textContent = '0:00';
+      
+      const totTime = document.getElementById('audio-total-time');
+      if (totTime) totTime.textContent = '0:00';
+      
+      const wave = document.getElementById('audio-wave');
+      if (wave) wave.classList.remove('playing');
+    }
+
+    async function toggleAudio() {
+      const playBtn = document.getElementById('audio-play-btn');
+      const playIcon = document.getElementById('audio-play-icon');
+      const pauseIcon = document.getElementById('audio-pause-icon');
+      const statusText = document.getElementById('player-status');
+      const wave = document.getElementById('audio-wave');
+
+      if (isGeneratingAudio) return;
+
+      if (!audioObj) {
+        const notesText = document.getElementById('notes-output').innerText.trim();
+        if (!notesText) {
+          showError('No notes text available to read.');
+          return;
+        }
+
+        isGeneratingAudio = true;
+        playBtn.disabled = true;
+        statusText.textContent = 'Generating voice explanation...';
+
+        try {
+          const res = await fetch('/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: notesText })
+          });
+
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || 'Failed to generate speech');
+          }
+
+          const blob = await res.blob();
+          audioUrl = URL.createObjectURL(blob);
+          audioObj = new Audio(audioUrl);
+
+          audioObj.addEventListener('loadedmetadata', () => {
+            document.getElementById('audio-total-time').textContent = formatTime(audioObj.duration);
+          });
+
+          audioObj.addEventListener('timeupdate', () => {
+            if (!audioObj) return;
+            const progress = (audioObj.currentTime / audioObj.duration) * 100;
+            document.getElementById('audio-progress-fill').style.width = `${progress}%`;
+            document.getElementById('audio-current-time').textContent = formatTime(audioObj.currentTime);
+          });
+
+          audioObj.addEventListener('ended', () => {
+            resetAudioStateUI();
+            statusText.textContent = 'Finished listening';
+          });
+
+          audioObj.addEventListener('error', () => {
+            showError('Error during audio playback.');
+            resetAudio();
+          });
+
+          isGeneratingAudio = false;
+          playBtn.disabled = false;
+
+        } catch (err) {
+          isGeneratingAudio = false;
+          playBtn.disabled = false;
+          statusText.textContent = 'Speech generation failed';
+          showError(err.message || 'Error converting text to speech.');
+          return;
+        }
+      }
+
+      if (audioObj.paused) {
+        audioObj.play().then(() => {
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+          statusText.textContent = 'Playing explanation';
+          wave.classList.add('playing');
+        }).catch(err => {
+          showError('Unable to play audio: ' + err.message);
+          resetAudio();
+        });
+      } else {
+        audioObj.pause();
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+        statusText.textContent = 'Paused';
+        wave.classList.remove('playing');
+      }
+    }
+
+    function resetAudioStateUI() {
+      document.getElementById('audio-play-icon').style.display = 'block';
+      document.getElementById('audio-pause-icon').style.display = 'none';
+      document.getElementById('audio-wave').classList.remove('playing');
+    }
+
+    function seekAudio(e) {
+      if (!audioObj || isNaN(audioObj.duration)) return;
+      const rect = document.getElementById('audio-progress-bg').getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
+      const percentage = clickX / width;
+      audioObj.currentTime = percentage * audioObj.duration;
     }
   </script>
 

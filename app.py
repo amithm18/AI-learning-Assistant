@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 from utils.pdf_reader import extract_text_from_pdf
 from utils.summarizer import generate_notes, generate_quiz
 from dotenv import load_dotenv
 import markdown
 import os
+import io
+from gtts import gTTS
 
 load_dotenv()
 
@@ -121,6 +123,24 @@ def generate_quiz_route():
 @app.errorhandler(413)
 def file_too_large(e):
     return jsonify({"error": "File too large. Maximum allowed size is 16MB."}), 413
+
+
+@app.route("/tts", methods=["POST"])
+def text_to_speech():
+    data = request.json or {}
+    text = data.get("text", "")
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
+    try:
+        # Generate speech using gTTS
+        tts = gTTS(text=text, lang="en")
+        fp = io.BytesIO()
+        tts.write_to_fp(fp)
+        fp.seek(0)
+        return send_file(fp, mimetype="audio/mp3")
+    except Exception as e:
+        return jsonify({"error": f"Speech generation failed: {str(e)}"}), 500
 
 
 if __name__ == "__main__":
