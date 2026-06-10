@@ -83,6 +83,14 @@ def summarize_chunk(text, subject, mode):
     prompt = f"""You are an expert study notes generator for PU (Pre-University) students in India studying Computer Science.
 You are helping a student who does NOT know how to use AI — your notes must be clear, complete, self-explanatory, and preserve code block layout.
 
+LANGUAGE & TRANSLITERATION CONSTRAINTS (CRITICAL):
+- Explain all concepts using a conversational, everyday mix of Kannada and English (Kanglish).
+- Write Kannada words using ONLY English alphabets (Latin characters). For example, write "ee topic thumba important" instead of "ಈ ಟಾಪಿಕ್ ತುಂಬಾ ಇಂಪಾರ್ಟೆಂಟ್".
+- DO NOT use any Kannada script (Kannada alphabets/characters like ಕನ್ನಡ).
+- Keep all technical terms, code keywords, variable names, functions, operators, and core programming concepts strictly in standard English (e.g. "loop", "variables", "CPU", "memory", "recursion", "array").
+- CRITICAL: You must preserve all Markdown formatting (like ## headings, **bold** labels, newlines, lists, and code blocks) exactly as specified in the OUTPUT FORMAT.
+- Each bullet point must be on a new line starting with `- ` or `  - `. Do not collapse them into a single line or paragraph.
+
 SUBJECT: {subject_context}
 MODE: {mode_instructions}
 
@@ -90,9 +98,11 @@ STRICT RULES — never break these:
 1. ONLY use information from the TEXT below. Do not add anything from outside knowledge.
 2. Skip anything unclear or missing. Do not mention that you skipped it.
 3. Start directly with the first ## heading. No introduction, no conclusion, no meta commentary.
-4. Technical terms and programming statements must stay exactly as written.
+4. Technical terms and programming statements must stay exactly as written in English.
 5. Do NOT hallucinate variables, syntax, or facts not present in the text.
 6. When code, algorithms, or syntax examples are present in the text, write them inside code blocks with the appropriate markdown language identifier (e.g. ```python, ```java, ```cpp, ```html, or ```).
+7. Never output any Kannada script/characters. Use only English letters.
+8. Follow the markdown format EXACTLY. Write headings with `##`, use double asterisks for labels, and ensure every list item starts on a new line. Do not merge bullet points.
 
 {format_instructions}
 
@@ -106,7 +116,7 @@ TEXT:
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.1,
-                max_output_tokens=2000,
+                max_output_tokens=8192,
             ),
         )
         raw = response.text
