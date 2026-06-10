@@ -9,9 +9,14 @@ load_dotenv()
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
+def before_sleep_log(retry_state):
+    exception = retry_state.outcome.exception() if retry_state.outcome else None
+    print(f"[Gemini API Retry] Attempt {retry_state.attempt_number} failed. Exception: {exception}. Retrying...")
+
 @retry(
-    stop=stop_after_attempt(5),
-    wait=wait_exponential(multiplier=1, min=2, max=15),
+    stop=stop_after_attempt(8),
+    wait=wait_exponential(multiplier=2, min=4, max=60),
+    before_sleep=before_sleep_log,
     reraise=True
 )
 def _call_gemini_api(model, contents, config):
@@ -97,7 +102,7 @@ TEXT:
 
     try:
         response = _call_gemini_api(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.1,
@@ -156,7 +161,7 @@ def get_mode_instructions(mode):
 
 def get_format_instructions(mode):
     if mode == "beginner":
-        return """OUTPUT FORMAT — follow exactly:
+        return """OUTPUT FORMAT — For EVERY major concept or topic found in the text, generate a separate notes section using this format:
 
 ## Topic Name
 [2-3 simple sentences explaining what this topic is and why it matters in Computer Science. Use simple everyday analogies.]
@@ -179,7 +184,7 @@ Explain each key line or term on a new line.
 ---"""
 
     elif mode == "exam":
-        return """OUTPUT FORMAT — follow exactly:
+        return """OUTPUT FORMAT — For EVERY major concept or exam topic found in the text, generate a separate notes section using this format:
 
 ## Topic Name
 [One line: what this topic is about.]
@@ -202,7 +207,7 @@ Explain crucial parts briefly.
 ---"""
 
     elif mode == "deep":
-        return """OUTPUT FORMAT — follow exactly:
+        return """OUTPUT FORMAT — For EVERY major concept or architecture component found in the text, generate a separate notes section using this format:
 
 ## Topic Name
 [2-3 sentences: what this topic is, why it is designed this way, and what problem it solves in system design or computation.]
