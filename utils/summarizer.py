@@ -1,11 +1,25 @@
 import re
 import os
-from groq import Groq
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 load_dotenv()
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=2, max=15),
+    reraise=True
+)
+def _call_gemini_api(model, contents, config):
+    return client.models.generate_content(
+        model=model,
+        contents=contents,
+        config=config
+    )
 
 
 # ── Filler pattern cleaner ────────────────────────────────────────────────────
@@ -79,13 +93,15 @@ TEXT:
 """
 
     try:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.1,
-            max_tokens=2000,
+        response = _call_gemini_api(
+            model="gemini-2.0-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.1,
+                max_output_tokens=2000,
+            ),
         )
-        raw = response.choices[0].message.content
+        raw = response.text
         return clean_model_output(raw)
 
     except Exception as e:
@@ -286,14 +302,16 @@ You must return your response in JSON format matching this schema:
 }}
 """
     try:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3,
-            response_format={"type": "json_object"}
+        response = _call_gemini_api(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.3,
+                response_mime_type="application/json",
+            ),
         )
-        data = json.loads(response.choices[0].message.content)
+        data = json.loads(response.text)
         return data.get("questions", [])
     except Exception as e:
         print(f"Error generating quiz question: {e}")
-        return []
+        return []
