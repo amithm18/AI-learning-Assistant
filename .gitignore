@@ -1,3 +1,20 @@
+# Environment variables
 .env
+
+# Python cache & virtual environment
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+
+# Uploaded files
+uploads/*
+!uploads/.gitkeep
+
+# IDE / OS settings
+.vscode/
+.idea/
+.DS_Store
