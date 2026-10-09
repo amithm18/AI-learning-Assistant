@@ -5,7 +5,6 @@ An AI-powered interactive study web application designed to help Computer Scienc
 ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0+-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![Groq](https://img.shields.io/badge/Groq-Llama%203.3%2070B-f34f29?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
 
