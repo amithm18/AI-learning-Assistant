@@ -10,9 +10,8 @@ __pycache__/
 env/
 venv/
 
-# Uploaded files
-uploads/*
-!uploads/.gitkeep
+# Processed PDFs (topics, chunks, embeddings, cached AI output)
+data/
 
 # IDE / OS settings
 .vscode/

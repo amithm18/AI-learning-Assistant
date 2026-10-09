@@ -1,207 +1,199 @@
+"""
+Step 1 of the pipeline: PDF -> topics (sections).
+
+1. Read every word with its font size, font name and position (pdfplumber).
+2. Rebuild lines, dropping page numbers and headers/footers that repeat on every page.
+3. A line is a heading if it is bigger (or bold) compared to normal body text.
+4. Everything between two headings becomes one section, which the UI shows as a "topic".
+"""
 import re
-import pdfplumber
-from collections import Counter
-import warnings
 import logging
+from collections import Counter
+
+import pdfplumber
+
+from utils.chunker import split_lines
 
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
-warnings.filterwarnings("ignore")
+
+LINE_TOLERANCE = 3        # words whose tops are within 3pt belong to the same line
+MIN_SECTION_WORDS = 40    # smaller sections are merged into the next one
+MAX_SECTION_WORDS = 1200  # larger sections are split into "part 1", "part 2", ...
+MAX_TITLE_CHARS = 80
 
 
-def extract_text_from_pdf(pdf_path):
+def extract_sections(pdf_file):
     """
-    General purpose PDF text extractor and chunker.
-    Works on any subject PDF regardless of topic, language or formatting.
-
-    Strategy:
-    1. Extract lines and calculate heading scores and vertical gaps (for paragraph detection).
-    2. Group lines into blocks (paragraphs/code blocks/headings), ensuring no block exceeds max_words.
-    3. Group blocks into chunks of up to max_words (e.g. 600 words), preserving layout and newlines.
+    pdf_file: a path or a file-like object.
+    Returns a list of sections: {id, title, page, text, word_count, lines}
+    where lines is a list of {"text", "page"} (used later for chunking with page numbers).
     """
-    structured_lines, body_size, has_size_variation = _extract_structured_lines(pdf_path)
-
-    if not structured_lines:
+    pages = _read_pages(pdf_file)
+    pages = _remove_headers_and_footers(pages)
+    lines = [line for page in pages for line in page]
+    if not lines:
         return []
 
-    # 1. Group lines into logical blocks
-    # Max words per block is 600
-    blocks = _group_lines_into_blocks(structured_lines, max_words=600)
+    sections = _split_at_headings(lines)
+    sections = _merge_tiny_sections(sections)
+    sections = _split_huge_sections(sections)
 
-    # 2. Determine threshold score for headings
-    min_score = 2 if has_size_variation else 1
-
-    # 3. Group blocks into chunks
-    chunks = _chunk_blocks(blocks, min_score=min_score, max_words=600)
-
-    # Clean up and filter out empty or extremely small chunks (less than 10 words)
-    cleaned_chunks = []
-    for c in chunks:
-        c_strip = c.strip()
-        if len(c_strip.split()) >= 10:
-            cleaned_chunks.append(c_strip)
-
-    return cleaned_chunks
+    result = []
+    for i, section in enumerate(sections):
+        text = "\n".join(line["text"] for line in section["lines"])
+        result.append({
+            "id": i,
+            "title": section["title"][:MAX_TITLE_CHARS],
+            "page": section["lines"][0]["page"],
+            "text": text,
+            "word_count": len(text.split()),
+            "lines": section["lines"],
+        })
+    return result
 
 
-def _extract_structured_lines(pdf_path):
-    """
-    Extract lines with a heading score based on size/boldness and identify paragraph starts.
-    """
-    all_lines = []
-    all_sizes = []
+# ── Reading lines ─────────────────────────────────────────────────────────────
 
-    with pdfplumber.open(pdf_path) as pdf:
-        # First pass: collect all font sizes document-wide
-        for page in pdf.pages:
+def _read_pages(pdf_file):
+    """Returns one list of lines per page."""
+    pages = []
+    with pdfplumber.open(pdf_file) as pdf:
+        for page_no, page in enumerate(pdf.pages, start=1):
             words = page.extract_words(extra_attrs=["size", "fontname"])
-            all_sizes.extend(round(w.get("size", 12), 1) for w in words)
+            words.sort(key=lambda w: (w["top"], w["x0"]))
 
-    if not all_sizes:
-        return [], 12.0, False
+            lines, current = [], []
+            for word in words:
+                if current and abs(word["top"] - current[0]["top"]) > LINE_TOLERANCE:
+                    lines.append(_make_line(current, page_no))
+                    current = []
+                current.append(word)
+            if current:
+                lines.append(_make_line(current, page_no))
 
-    body_size = Counter(all_sizes).most_common(1)[0][0]
-    unique_sizes = set(round(s, 1) for s in all_sizes)
-    has_size_variation = any(s > body_size + 1.0 for s in unique_sizes)
-
-    with pdfplumber.open(pdf_path) as pdf:
-        prev_bottom = None
-        prev_page_idx = None
-
-        for page_idx, page in enumerate(pdf.pages):
-            words = page.extract_words(extra_attrs=["size", "fontname"])
-            if not words:
-                continue
-
-            lines_by_top = {}
-            for w in words:
-                lines_by_top.setdefault(round(w["top"]), []).append(w)
-
-            for top in sorted(lines_by_top):
-                lw = lines_by_top[top]
-                lw.sort(key=lambda w: w["x0"])
-                text = " ".join(w["text"] for w in lw).strip()
-                text = re.sub(r'[ \t]+', ' ', text)
-
-                # Skip empty text or line numbers / page numbers
-                if not text or re.match(r'^\d+$', text):
-                    continue
-
-                sizes = [round(w.get("size", body_size), 1) for w in lw]
-                fonts = [w.get("fontname", "") for w in lw]
-                dominant_size = Counter(sizes).most_common(1)[0][0]
-                bold_ratio = sum(
-                    1 for f in fonts
-                    if any(b in f for b in ["Bold", "Heavy", "Black"])
-                ) / len(fonts)
-
-                is_larger = dominant_size > body_size + 1.0
-                is_bold = bold_ratio >= 0.6
-                word_count = len(text.split())
-                ends_clean = not text.rstrip().endswith(('.', ',', ';'))
-
-                score = (2 if is_larger else 0) + (1 if is_bold else 0)
-
-                # Extra filter: long lines or lines ending mid-sentence are not headings
-                if word_count > 10 or not ends_clean:
-                    score = 0
-
-                # Determine if this line starts a new paragraph / section
-                dominant_top = min(w["top"] for w in lw)
-                dominant_bottom = max(w["bottom"] for w in lw)
-                line_height = dominant_bottom - dominant_top
-
-                is_paragraph_start = False
-                if prev_page_idx is not None and page_idx != prev_page_idx:
-                    is_paragraph_start = True
-                elif prev_bottom is not None:
-                    gap = dominant_top - prev_bottom
-                    # If vertical gap is more than 50% of line height, or more than 6pt, it's a paragraph break
-                    if gap > max(6.0, line_height * 0.5):
-                        is_paragraph_start = True
-
-                prev_bottom = dominant_bottom
-                prev_page_idx = page_idx
-
-                all_lines.append({
-                    "text": text,
-                    "score": score,
-                    "size": dominant_size,
-                    "word_count": word_count,
-                    "is_paragraph_start": is_paragraph_start
-                })
-
-    return all_lines, body_size, has_size_variation
+            pages.append([line for line in lines if line])
+    return pages
 
 
-def _group_lines_into_blocks(structured_lines, max_words=600):
-    """
-    Group lines into logical paragraph blocks.
-    A new block is started when a heading is encountered, when paragraph start is detected,
-    or if the block word count would exceed max_words (safety split).
-    """
-    blocks = []
-    current_block = []
-    current_block_words = 0
+def _make_line(words, page_no):
+    words.sort(key=lambda w: w["x0"])
+    text = re.sub(r"\s+", " ", " ".join(w["text"] for w in words)).strip()
 
-    for line in structured_lines:
-        line_words = line["word_count"]
-        # Start new block if heading, paragraph break, or block gets too large
-        if (line["score"] > 0 or line["is_paragraph_start"] or (current_block_words + line_words > max_words)) and current_block:
-            blocks.append(current_block)
-            current_block = [line]
-            current_block_words = line_words
+    # Skip empty lines, and debris from figures/equations like "A 2 B 5 S S" (no real word).
+    # Lines with code symbols are kept, so code such as "}" or "x = 5" survives.
+    if not text or not (re.search(r"[A-Za-z]{3,}", text) or re.search(r"[{}()\[\];=<>]", text)):
+        return None
+
+    size = Counter(round(w["size"], 1) for w in words).most_common(1)[0][0]
+    bold_words = sum(1 for w in words if any(b in w["fontname"] for b in ("Bold", "Heavy", "Black")))
+
+    return {
+        "text": text,
+        "size": size,
+        "bold": bold_words / len(words) >= 0.6,
+        "word_count": len(text.split()),
+        "page": page_no,
+    }
+
+
+def _remove_headers_and_footers(pages):
+    """Drop lines at the top/bottom of a page that repeat on at least half the pages."""
+    if len(pages) < 3:
+        return pages
+
+    def key(text):
+        return re.sub(r"\d+", "#", text.lower())  # "Page 3" and "Page 4" count as the same
+
+    def is_edge(i, page):
+        return i < 2 or i >= len(page) - 2
+
+    counts = Counter()
+    for page in pages:
+        counts.update({key(line["text"]) for i, line in enumerate(page) if is_edge(i, page)})
+    repeated = {k for k, c in counts.items() if c >= len(pages) / 2}
+
+    return [
+        [line for i, line in enumerate(page) if not (is_edge(i, page) and key(line["text"]) in repeated)]
+        for page in pages
+    ]
+
+
+# ── Building sections ─────────────────────────────────────────────────────────
+
+def _split_at_headings(lines):
+    body_size = _body_font_size(lines)
+    has_bigger_text = any(line["size"] > body_size + 1 for line in lines)
+
+    sections = [{"title": "Introduction", "lines": [], "found_heading": False}]
+    for line in lines:
+        if _is_heading(line, body_size, has_bigger_text):
+            current = sections[-1]
+            if not current["lines"] and current["found_heading"]:
+                # Two heading lines in a row ("Chapter 3" + "Data Structures") -> one title
+                current["title"] += " " + line["text"]
+            else:
+                sections.append({"title": line["text"], "lines": [], "found_heading": True})
         else:
-            current_block.append(line)
-            current_block_words += line_words
+            sections[-1]["lines"].append({"text": line["text"], "page": line["page"]})
 
-    if current_block:
-        blocks.append(current_block)
-
-    return blocks
+    return [s for s in sections if s["lines"]]
 
 
-def _chunk_blocks(blocks, min_score, max_words=600):
-    """
-    Group blocks of lines into chunks up to max_words, ensuring newlines and spacing are preserved.
-    """
-    chunks = []
-    current_chunk_blocks = []
-    current_word_count = 0
+def _body_font_size(lines):
+    """The font size used by the most words is the normal body text size."""
+    counts = Counter()
+    for line in lines:
+        counts[line["size"]] += line["word_count"]
+    return counts.most_common(1)[0][0]
 
-    for block in blocks:
-        block_text = "\n".join(l["text"] for l in block).strip()
-        if not block_text:
+
+def _is_heading(line, body_size, has_bigger_text):
+    text = line["text"]
+    # Headings are short, don't end like a sentence, and contain a real word (not just math symbols)
+    if line["word_count"] > 10 or text.endswith((".", ",", ";")) or not re.search(r"[A-Za-z]{3,}", text):
+        return False
+    if has_bigger_text:
+        # If the PDF uses bigger fonts for headings, only trust size (bold body words are not headings)
+        return line["size"] > body_size + 1
+    return line["bold"]
+
+
+def _merge_tiny_sections(sections):
+    """A section with almost no text is merged into the following section."""
+    merged = []
+    carry = []
+    for section in sections:
+        section_words = sum(len(l["text"].split()) for l in section["lines"])
+        if section_words < MIN_SECTION_WORDS:
+            if section["found_heading"]:
+                carry.append({"text": section["title"], "page": section["lines"][0]["page"]})
+            carry += section["lines"]
             continue
+        section["lines"] = carry + section["lines"]
+        carry = []
+        merged.append(section)
 
-        block_words = len(block_text.split())
-
-        # Check if the block starts with a heading
-        first_line = block[0]
-        is_heading = first_line["score"] >= min_score
-
-        # Start a new chunk if:
-        # 1. Heading block is found and current chunk is already somewhat filled (avoid tiny chunks)
-        # 2. Or, adding this block would exceed the target word size
-        if (is_heading and current_word_count >= 150) or \
-           (current_word_count + block_words > max_words and current_chunk_blocks):
-            
-            # Emit current chunk
-            chunk_content = []
-            for b in current_chunk_blocks:
-                chunk_content.append("\n".join(l["text"] for l in b))
-            chunks.append("\n\n".join(chunk_content))
-
-            # Start new chunk
-            current_chunk_blocks = [block]
-            current_word_count = block_words
+    if carry:
+        if merged:
+            merged[-1]["lines"] += carry
         else:
-            current_chunk_blocks.append(block)
-            current_word_count += block_words
+            merged.append({"title": sections[0]["title"], "lines": carry, "found_heading": False})
+    return merged
 
-    if current_chunk_blocks:
-        chunk_content = []
-        for b in current_chunk_blocks:
-            chunk_content.append("\n".join(l["text"] for l in b))
-        chunks.append("\n\n".join(chunk_content))
 
-    return chunks
+def _split_huge_sections(sections):
+    """Very long sections become parts, so one topic is never too big for one AI call."""
+    no_headings = len(sections) == 1 and not sections[0]["found_heading"]
+    result = []
+    for section in sections:
+        parts = split_lines(section["lines"], MAX_SECTION_WORDS, overlap_words=0)
+        for n, part in enumerate(parts, start=1):
+            if no_headings:
+                first, last = part[0]["page"], part[-1]["page"]
+                title = f"Page {first}" if first == last else f"Pages {first}–{last}"
+            elif len(parts) > 1:
+                title = f"{section['title']} (part {n})"
+            else:
+                title = section["title"]
+            result.append({"title": title, "lines": part, "found_heading": section["found_heading"]})
+    return result

@@ -138,43 +138,6 @@
       border-color: rgba(99, 102, 241, 0.15);
     }
 
-    /* Tab Switcher Styles */
-    .tabs-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 28px;
-    }
-
-    .btn-tab {
-      flex: 1;
-      padding: 12px;
-      background: rgba(17, 24, 39, 0.4);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      border-radius: 10px;
-      font-family: 'Outfit', sans-serif;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .btn-tab:hover {
-      border-color: var(--border-hover);
-      color: var(--ink);
-    }
-
-    .btn-tab.active {
-      background: var(--accent-lt);
-      border-color: var(--accent);
-      color: #818CF8;
-      box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
-    }
-
     .step-label {
       font-size: 11px;
       font-weight: 600;
@@ -407,7 +370,7 @@
       font-weight: 500;
     }
 
-    #error-box {
+    .error-box {
       display: none;
       margin-top: 20px;
       background: var(--danger-lt);
@@ -418,24 +381,11 @@
       color: var(--danger);
       animation: fadeIn 0.25s;
     }
-    #error-box.show {
+    .error-box.show {
       display: block;
     }
 
     /* ── Notes output section ── */
-    #notes-section {
-      display: none;
-      margin-top: 36px;
-      width: 100%;
-      max-width: 620px;
-      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 10;
-    }
-
-    #notes-section.show {
-      display: block;
-    }
-
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -641,19 +591,6 @@
     }
 
     /* ── Interactive Quiz Section Styles ── */
-    #quiz-section {
-      display: none;
-      margin-top: 36px;
-      width: 100%;
-      max-width: 620px;
-      animation: fadeUp 0.5s ease;
-      z-index: 10;
-    }
-
-    #quiz-section.show {
-      display: block;
-    }
-
     .quiz-question-card {
       background: var(--surface);
       backdrop-filter: blur(12px);
@@ -881,6 +818,214 @@
       0% { height: 20%; }
       100% { height: 100%; }
     }
+
+    /* ── Screens, topics, ask box ── */
+    .hidden { display: none !important; }
+
+    .topic-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .topic-item {
+      width: 100%;
+      padding: 15px 18px;
+      background: rgba(17, 24, 39, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--ink);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .topic-item:hover {
+      border-color: var(--border-hover);
+      background: rgba(99, 102, 241, 0.05);
+      transform: translateX(4px);
+    }
+
+    .topic-meta {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      font-weight: 400;
+    }
+
+    .back-link {
+      background: none;
+      border: none;
+      color: #818CF8;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding: 0;
+    }
+
+    .topic-heading {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.3;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action-row .btn { margin-top: 0; }
+
+    .section-block {
+      margin-top: 32px;
+      width: 100%;
+      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hint {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 6px 0 16px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      padding: 9px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(17, 24, 39, 0.4);
+      color: #D1D5DB;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13.5px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+      border-color: var(--border-hover);
+      color: #FFF;
+    }
+
+    .ask-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .ask-input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(17, 24, 39, 0.5);
+      color: var(--ink);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+    }
+
+    .ask-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .ask-row .btn {
+      width: auto;
+      margin-top: 0;
+      padding: 12px 22px;
+    }
+
+    .sources {
+      margin-top: 20px;
+      border-top: 1px dashed var(--border);
+      padding-top: 14px;
+    }
+
+    .sources-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .source-item {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .source-item b { color: #38BDF8; font-weight: 600; }
+
+    .quiz-source {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* Status toast: progress + errors, visible wherever the student has scrolled */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: calc(100% - 32px);
+      background: var(--surface-opaque);
+      border: 1px solid var(--border-hover);
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      z-index: 100;
+      animation: fadeIn 0.2s;
+    }
+
+    .toast.error {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #F87171;
+      cursor: pointer;
+    }
+
+    .spinner.small {
+      width: 20px;
+      height: 20px;
+      border-width: 3px;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 480px) {
+      .card, .notes-card, .quiz-question-card { padding: 24px 18px; }
+      .action-row { grid-template-columns: 1fr; }
+      .notes-actions { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
@@ -891,42 +1036,12 @@
       <span class="logo-text">AI Learning Assistant</span>
     </div>
     <h1>Smart notes for<br><em>Computer Science</em></h1>
-    <p>Upload your chapter PDF — get clear notes or take practice quizzes instantly.</p>
+    <p>Upload your chapter PDF, pick a topic, and get notes, quizzes and answers straight from your book.</p>
   </header>
 
-  <div class="card">
-
-    <!-- Tab Switcher -->
-    <div class="tabs-container">
-      <button id="tab-notes" class="btn-tab active" onclick="switchTab('notes')">📝 Study Notes</button>
-      <button id="tab-quiz" class="btn-tab" onclick="switchTab('quiz')">⚡ Interactive Quiz</button>
-    </div>
-
-    <!-- Step 1: Mode -->
-    <div id="step-1-container">
-      <div class="step-label">Step 1 — How do you want to study?</div>
-      <div class="selector-grid three-col">
-        <div class="option-btn selected" data-group="mode" data-value="beginner" onclick="selectOption(this)">
-          <div class="option-icon">🌱</div>
-          <div class="option-name">Beginner</div>
-          <div class="option-desc">Simple explanation, basic analogies</div>
-        </div>
-        <div class="option-btn" data-group="mode" data-value="exam" onclick="selectOption(this)">
-          <div class="option-icon">📝</div>
-          <div class="option-name">Exam Ready</div>
-          <div class="option-desc">Key points + exam questions</div>
-        </div>
-        <div class="option-btn" data-group="mode" data-value="deep" onclick="selectOption(this)">
-          <div class="option-icon">🔬</div>
-          <div class="option-name">Deep Dive</div>
-          <div class="option-desc">Trace flows, complexities, why it works</div>
-        </div>
-      </div>
-      <hr class="divider" id="divider-1"/>
-    </div>
-
-    <!-- Step 2: Upload -->
-    <div class="step-label" id="upload-step-label">Step 2 — Upload your PDF</div>
+  <!-- ── Screen 1: upload ── -->
+  <div class="card" id="upload-screen">
+    <div class="step-label">Step 1 — Upload your chapter PDF</div>
     <div class="drop-zone" id="drop-zone">
       <input type="file" id="pdf-input" accept=".pdf"/>
       <div class="drop-icon">
@@ -944,135 +1059,245 @@
       ✓ <span id="file-name">file.pdf</span>
     </div>
 
-    <button class="btn" id="upload-btn" disabled onclick="handleUploadClick()">
-      Generate CS Study Notes
-    </button>
+    <button class="btn" id="upload-btn" disabled onclick="uploadPdf()">Read my PDF</button>
 
-    <!-- Loading -->
     <div id="loading">
       <div class="spinner"></div>
-      <div class="loading-msg" id="loading-msg">Analyzing computer science PDF and crafting notes…</div>
-      <div class="loading-step" id="loading-step">Extracting content structure</div>
+      <div class="loading-msg">Reading your PDF… (the very first upload takes longer)</div>
+      <div class="loading-step" id="loading-step"></div>
     </div>
 
-    <!-- Error -->
-    <div id="error-box"></div>
+    <div class="error-box" id="upload-error"></div>
   </div>
 
-  <!-- Notes output -->
-  <div id="notes-section">
+  <!-- ── Screen 2: topic list ── -->
+  <div class="card hidden" id="topics-screen">
+    <div class="step-label">Step 2 — Pick a topic to study</div>
     <div class="notes-header">
-      <div class="notes-title">Your Study Notes</div>
-      <div class="notes-meta">
-        <span class="badge badge-subject" id="badge-subject"></span>
-        <span class="badge badge-mode" id="badge-mode"></span>
-        <span class="badge badge-chunks" id="badge-chunks"></span>
-      </div>
+      <div class="notes-title" id="doc-name"></div>
+      <span class="badge badge-chunks" id="topic-count"></span>
     </div>
-    <div class="notes-card">
-      <!-- Audio Player Container -->
-      <div class="audio-player-container" id="audio-player-container">
-        <div class="audio-player-header">
-          <span class="player-title">🔊 Audio Explanation</span>
-          <span class="player-status" id="player-status">Click play to listen</span>
-        </div>
-        <div class="audio-controls-row">
-          <button class="player-btn" id="audio-play-btn" onclick="toggleAudio()">
-            <svg class="play-icon" id="audio-play-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <svg class="pause-icon" id="audio-pause-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="display: none;">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-            </svg>
-          </button>
-          
-          <div class="progress-container">
-            <div class="progress-bar-bg" id="audio-progress-bg" onclick="seekAudio(event)">
-              <div class="progress-bar-fill" id="audio-progress-fill"></div>
-            </div>
-            <div class="audio-time">
-              <span id="audio-current-time">0:00</span>
-              <span id="audio-total-time">0:00</span>
-            </div>
+    <div class="topic-list" id="topic-list"></div>
+    <div class="notes-actions">
+      <button class="btn-outline" onclick="openWholePdfQuiz()">⚡ Quiz on the whole PDF</button>
+      <button class="btn-outline" onclick="resetToUpload()">Upload another PDF</button>
+    </div>
+  </div>
+
+  <!-- ── Screen 3: one topic ── -->
+  <div class="hidden" id="topic-screen" style="width: 100%; max-width: 620px; z-index: 10;">
+    <div class="card">
+      <button class="back-link" onclick="showScreen('topics')">← All topics</button>
+      <div class="topic-heading" id="topic-title"></div>
+      <div class="notes-meta" style="margin-top: 10px;">
+        <span class="badge badge-subject" id="topic-page"></span>
+      </div>
+      <hr class="divider"/>
+
+      <div id="mode-block">
+        <div class="step-label">How do you want to study?</div>
+        <div class="selector-grid three-col">
+          <div class="option-btn selected" data-group="mode" data-value="beginner" onclick="selectOption(this)">
+            <div class="option-icon">🌱</div>
+            <div class="option-name">Beginner</div>
+            <div class="option-desc">Simple explanation, basic analogies</div>
           </div>
-          
-          <div class="audio-wave" id="audio-wave">
-            <span class="wave-bar"></span>
-            <span class="wave-bar"></span>
-            <span class="wave-bar"></span>
-            <span class="wave-bar"></span>
-            <span class="wave-bar"></span>
+          <div class="option-btn" data-group="mode" data-value="exam" onclick="selectOption(this)">
+            <div class="option-icon">📝</div>
+            <div class="option-name">Exam Ready</div>
+            <div class="option-desc">Key points + exam questions</div>
+          </div>
+          <div class="option-btn" data-group="mode" data-value="deep" onclick="selectOption(this)">
+            <div class="option-icon">🔬</div>
+            <div class="option-name">Deep Dive</div>
+            <div class="option-desc">Trace flows, complexities, why it works</div>
           </div>
         </div>
       </div>
-      <div id="notes-output"></div>
-    </div>
-    <div class="notes-actions">
-      <button class="btn-outline" onclick="copyNotes()">Copy Notes</button>
-      <button class="btn-outline" onclick="resetPage()">Upload Another</button>
-    </div>
-  </div>
 
-  <!-- Quiz output -->
-  <div id="quiz-section">
-    <div class="notes-header">
-      <div class="notes-title">Interactive Practice Quiz</div>
-      <div class="notes-meta">
-        <span class="badge badge-subject">Computer Science</span>
-        <span class="badge badge-mode" id="badge-quiz-score">Score: 0/5</span>
+      <div class="action-row" id="action-row">
+        <button class="btn" id="notes-btn" onclick="makeNotes()">📝 Make notes</button>
+        <button class="btn" id="quiz-btn" onclick="makeQuiz()">⚡ Quiz me</button>
       </div>
     </div>
-    <div id="quiz-container"></div>
-    <div class="notes-actions">
-      <button class="btn-outline" onclick="resetPage()">Upload Another</button>
+
+    <!-- Notes -->
+    <div class="section-block hidden" id="notes-section">
+      <div class="notes-header">
+        <div class="notes-title">Your Study Notes</div>
+        <div class="notes-meta"><span class="badge badge-mode" id="badge-mode"></span></div>
+      </div>
+      <div class="notes-card">
+        <div class="audio-player-container">
+          <div class="audio-player-header">
+            <span class="player-title">🔊 Listen to these notes</span>
+            <span class="player-status" id="player-status">Click play to listen</span>
+          </div>
+          <div class="audio-controls-row">
+            <button class="player-btn" id="audio-play-btn" onclick="toggleAudio()">
+              <svg id="audio-play-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <svg id="audio-pause-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="display: none;">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+              </svg>
+            </button>
+            <div class="progress-container">
+              <div class="progress-bar-bg" id="audio-progress-bg" onclick="seekAudio(event)">
+                <div class="progress-bar-fill" id="audio-progress-fill"></div>
+              </div>
+              <div class="audio-time">
+                <span id="audio-current-time">0:00</span>
+                <span id="audio-total-time">0:00</span>
+              </div>
+            </div>
+            <div class="audio-wave" id="audio-wave">
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+            </div>
+          </div>
+        </div>
+        <div id="notes-output"></div>
+      </div>
+      <div class="notes-actions">
+        <button class="btn-outline" onclick="explainSimply()">🤔 I didn't understand this</button>
+        <button class="btn-outline" id="copy-btn" onclick="copyNotes()">Copy notes</button>
+      </div>
+    </div>
+
+    <!-- Simpler explanation (RAG) -->
+    <div class="section-block hidden" id="explain-section">
+      <div class="notes-header">
+        <div class="notes-title">Explained more simply</div>
+      </div>
+      <div class="notes-card">
+        <div id="explain-output"></div>
+        <div class="sources" id="explain-sources"></div>
+      </div>
+    </div>
+
+    <!-- Quiz -->
+    <div class="section-block hidden" id="quiz-section">
+      <div class="notes-header">
+        <div class="notes-title">Practice Quiz</div>
+        <div class="notes-meta"><span class="badge badge-mode" id="badge-quiz-score"></span></div>
+      </div>
+      <div id="quiz-container"></div>
+    </div>
+
+    <!-- Ask a doubt (RAG) -->
+    <div class="section-block">
+      <div class="card">
+        <div class="notes-title">Have a doubt?</div>
+        <p class="hint" id="ask-hint">Tap a question below, or type your doubt in your own words.</p>
+        <div class="chips" id="chips"></div>
+        <div class="ask-row">
+          <input class="ask-input" id="ask-input" placeholder="e.g. what is push?" maxlength="500"
+                 onkeydown="if (event.key === 'Enter') askQuestion()"/>
+          <button class="btn" onclick="askQuestion()">Ask</button>
+        </div>
+        <div class="hidden" id="answer-block" style="margin-top: 22px;">
+          <div class="notes-card" style="padding: 24px 26px;">
+            <div id="answer-output"></div>
+            <div class="sources" id="answer-sources"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <footer>Notes are generated only from your uploaded materials &mdash; built for CS students.</footer>
+  <div class="toast hidden" id="toast" onclick="hideToast()"></div>
+
+  <footer>Everything is generated only from your uploaded PDF, with page numbers &mdash; built for CS students.</footer>
 
   <script>
-    let currentFile = null;
-    let currentTab = 'notes';
+    // ── State ──
+    let doc = null;      // { doc_id, filename, topics: [...] }
+    let topic = null;    // the open topic, or null for "whole PDF"
+    let busy = false;    // one AI request at a time
     let quizData = [];
     let userScore = 0;
-    let questionsAnswered = 0;
 
-    // Audio Player State Variables
     let audioObj = null;
     let audioUrl = null;
     let isGeneratingAudio = false;
 
-    // ── Tab Switcher ──
-    function switchTab(tab) {
-      resetAudio();
-      currentTab = tab;
-      document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
-      document.getElementById(`tab-${tab}`).classList.add('active');
-      
-      const step1 = document.getElementById('step-1-container');
-      const uploadStepLabel = document.getElementById('upload-step-label');
-      const uploadBtn = document.getElementById('upload-btn');
-      
-      if (tab === 'notes') {
-        step1.style.display = 'block';
-        uploadStepLabel.textContent = 'Step 2 — Upload your PDF';
-        uploadBtn.textContent = 'Generate CS Study Notes';
-      } else {
-        step1.style.display = 'none';
-        uploadStepLabel.textContent = 'Step 1 — Upload your PDF';
-        uploadBtn.textContent = 'Generate Interactive Quiz';
-      }
-      
-      // Reset any existing outputs
-      document.getElementById('notes-section').classList.remove('show');
-      document.getElementById('quiz-section').classList.remove('show');
-      hideError();
+    const input = document.getElementById('pdf-input');
+    const dropZone = document.getElementById('drop-zone');
+    const uploadBtn = document.getElementById('upload-btn');
+
+    // ── Small helpers ──
+    function $(id) { return document.getElementById(id); }
+
+    function showScreen(name) {
+      ['upload', 'topics', 'topic'].forEach(s => $(`${s}-screen`).classList.toggle('hidden', s !== name));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ── Option selector ──
+    function storage(action, value) {
+      // localStorage can be blocked (private mode); the app still works without it
+      try {
+        if (action === 'get') return localStorage.getItem('doc_id');
+        if (action === 'set') localStorage.setItem('doc_id', value);
+        if (action === 'remove') localStorage.removeItem('doc_id');
+      } catch (e) { return null; }
+    }
+
+    async function api(path, body) {
+      const options = body === undefined ? {} : {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      };
+      let res;
+      try {
+        res = await fetch(path, options);
+      } catch (e) {
+        throw new Error('Network error. Please check that the server is running.');
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+      return data;
+    }
+
+    let toastTimer;
+    function showToast(message, isError) {
+      clearTimeout(toastTimer);
+      const toast = $('toast');
+      toast.className = 'toast' + (isError ? ' error' : '');
+      toast.innerHTML = isError ? '' : '<div class="spinner small"></div>';
+      const text = document.createElement('span');
+      text.textContent = message;
+      toast.appendChild(text);
+      if (isError) toastTimer = setTimeout(hideToast, 7000);
+    }
+    function hideToast() { $('toast').classList.add('hidden'); }
+
+    // Runs one AI action: shows progress, blocks double clicks, shows errors
+    async function run(message, task) {
+      if (busy) return;
+      busy = true;
+      showToast(message, false);
+      try {
+        await task();
+        hideToast();
+      } catch (err) {
+        showToast(err.message, true);
+      } finally {
+        busy = false;
+      }
+    }
+
+    function reveal(id) {
+      $(id).classList.remove('hidden');
+      $(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function selectOption(el) {
-      const group = el.dataset.group;
-      document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll(`[data-group="${el.dataset.group}"]`).forEach(b => b.classList.remove('selected'));
       el.classList.add('selected');
     }
 
@@ -1081,15 +1306,22 @@
       return el ? el.dataset.value : null;
     }
 
-    // ── File handling ──
-    const input    = document.getElementById('pdf-input');
-    const dropZone = document.getElementById('drop-zone');
-    const btn      = document.getElementById('upload-btn');
+    function renderSources(containerId, sources) {
+      const box = $(containerId);
+      box.innerHTML = '<div class="sources-title">📖 From your PDF</div>';
+      sources.forEach(s => {
+        const item = document.createElement('div');
+        item.className = 'source-item';
+        const label = document.createElement('b');
+        label.textContent = `p. ${s.page}` + (s.topic ? ` · ${s.topic}` : '');
+        item.appendChild(label);
+        item.appendChild(document.createTextNode(` — ${s.text}`));
+        box.appendChild(item);
+      });
+    }
 
-    input.addEventListener('change', () => {
-      if (input.files[0]) setFile(input.files[0]);
-    });
-
+    // ── Screen 1: upload ──
+    input.addEventListener('change', () => { if (input.files[0]) setFile(input.files[0]); });
     dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
     dropZone.addEventListener('drop', e => {
@@ -1097,371 +1329,378 @@
       dropZone.classList.remove('dragging');
       const f = e.dataTransfer.files[0];
       if (f && f.type === 'application/pdf') setFile(f);
-      else showError('Please drop a valid PDF file.');
+      else showUploadError('Please drop a valid PDF file.');
     });
 
     function setFile(f) {
-      currentFile = f;
       input._file = f;
-      document.getElementById('file-name').textContent = f.name;
-      document.getElementById('file-chosen').classList.add('show');
-      btn.disabled = false;
-      hideError();
+      $('file-name').textContent = f.name;
+      $('file-chosen').classList.add('show');
+      uploadBtn.disabled = false;
+      $('upload-error').classList.remove('show');
     }
 
-    // ── Loading steps ──
-    const notesSteps = [
-      'Extracting text & formatting from PDF',
-      'Grouping syntax structures & paragraphs',
-      'Analyzing algorithms and concepts',
-      'Generating study notes with code snippets',
-      'Formatting code blocks & highlighting…'
+    function showUploadError(msg) {
+      $('upload-error').textContent = msg;
+      $('upload-error').classList.add('show');
+    }
+
+    const uploadSteps = [
+      'Reading pages and fonts',
+      'Finding headings and topics',
+      'Cutting topics into small chunks',
+      'Building the search index for your book'
     ];
+    let stepTimer;
 
-    const quizSteps = [
-      'Extracting text & formatting from PDF',
-      'Identifying high-yield topics & keywords',
-      'Generating exam-style quiz questions',
-      'Formulating correct answers & explanations',
-      'Assembling interactive quiz interface…'
-    ];
-
-    let stepIndex = 0, stepTimer;
-
-    function startSteps() {
-      stepIndex = 0;
-      const stepsList = currentTab === 'notes' ? notesSteps : quizSteps;
-      document.getElementById('loading-step').textContent = stepsList[0];
-      stepTimer = setInterval(() => {
-        stepIndex = Math.min(stepIndex + 1, stepsList.length - 1);
-        document.getElementById('loading-step').textContent = stepsList[stepIndex];
-      }, 4000);
-    }
-    function stopSteps() { clearInterval(stepTimer); }
-
-    // ── Main click handler — directly proceed to upload ──
-    async function handleUploadClick() {
-      proceedWithUpload();
-    }
-
-    // ── Actual upload ──
-    async function proceedWithUpload() {
-      resetAudio();
+    async function uploadPdf() {
       const file = input._file || input.files[0];
       if (!file) return;
 
-      btn.disabled = true;
-      document.getElementById('loading').classList.add('show');
-      document.getElementById('notes-section').classList.remove('show');
-      document.getElementById('quiz-section').classList.remove('show');
-      
-      const loadingMsg = document.getElementById('loading-msg');
-      if (currentTab === 'notes') {
-        loadingMsg.textContent = 'Analyzing computer science PDF and crafting notes…';
-      } else {
-        loadingMsg.textContent = 'Analyzing computer science PDF and crafting quiz questions…';
-      }
-      
-      hideError();
-      startSteps();
+      uploadBtn.disabled = true;
+      $('upload-error').classList.remove('show');
+      $('loading').classList.add('show');
+      let step = 0;
+      $('loading-step').textContent = uploadSteps[0];
+      stepTimer = setInterval(() => {
+        step = Math.min(step + 1, uploadSteps.length - 1);
+        $('loading-step').textContent = uploadSteps[step];
+      }, 2500);
 
       const formData = new FormData();
       formData.append('pdf_file', file);
 
-      let targetUrl = '/upload';
-      if (currentTab === 'notes') {
-        const mode = getSelected('mode');
-        formData.append('mode', mode);
-      } else {
-        targetUrl = '/quiz';
-      }
-
       try {
-        const res = await fetch(targetUrl, { method: 'POST', body: formData });
-        const data = await res.json();
-
-        stopSteps();
-        document.getElementById('loading').classList.remove('show');
-
-        if (!res.ok || data.error) {
-          showError(data.error || 'Something went wrong. Please try again.');
-          btn.disabled = false;
-          return;
+        let res;
+        try {
+          res = await fetch('/api/documents', { method: 'POST', body: formData });
+        } catch (e) {
+          throw new Error('Network error. Please check that the server is running.');
         }
-
-        if (currentTab === 'notes') {
-          document.getElementById('notes-output').innerHTML = data.notes;
-          document.getElementById('badge-subject').textContent = data.subject;
-          document.getElementById('badge-mode').textContent = data.mode;
-          document.getElementById('badge-chunks').textContent = data.chunk_count + ' sections';
-          document.getElementById('notes-section').classList.add('show');
-          document.getElementById('notes-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          renderQuiz(data.quiz);
-          document.getElementById('quiz-section').classList.add('show');
-          document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+        openDocument(data);
       } catch (err) {
-        stopSteps();
-        document.getElementById('loading').classList.remove('show');
-        showError('Network error. Please check your backend connection.');
-        btn.disabled = false;
+        showUploadError(err.message);
+      } finally {
+        clearInterval(stepTimer);
+        $('loading').classList.remove('show');
+        uploadBtn.disabled = false;
       }
     }
 
-    // ── Quiz Renderer ──
+    function resetToUpload() {
+      resetAudio();
+      doc = null;
+      topic = null;
+      storage('remove');
+      input.value = '';
+      input._file = null;
+      $('file-chosen').classList.remove('show');
+      uploadBtn.disabled = true;
+      showScreen('upload');
+    }
+
+    // ── Screen 2: topic list ──
+    function openDocument(data) {
+      doc = data;
+      storage('set', data.doc_id);
+      $('doc-name').textContent = data.filename;
+      $('topic-count').textContent = `${data.topics.length} topic${data.topics.length === 1 ? '' : 's'}`;
+
+      const list = $('topic-list');
+      list.innerHTML = '';
+      data.topics.forEach(t => {
+        const item = document.createElement('button');
+        item.className = 'topic-item';
+        item.onclick = () => openTopic(t);
+
+        const title = document.createElement('span');
+        title.textContent = t.title;
+        const meta = document.createElement('span');
+        meta.className = 'topic-meta';
+        meta.textContent = `p. ${t.page} · ${Math.max(1, Math.round(t.word_count / 200))} min read`;
+
+        item.append(title, meta);
+        list.appendChild(item);
+      });
+      showScreen('topics');
+    }
+
+    // ── Screen 3: one topic ──
+    function openTopic(t) {
+      topic = t;
+      $('topic-title').textContent = t.title;
+      $('topic-page').textContent = `Starts on page ${t.page}`;
+      $('mode-block').classList.remove('hidden');
+      $('notes-btn').classList.remove('hidden');
+      $('action-row').style.gridTemplateColumns = '';
+      $('ask-hint').textContent = 'Tap a question below, or type your doubt in your own words.';
+      clearTopicOutputs();
+      showScreen('topic');
+      loadSuggestions(t);
+    }
+
+    function openWholePdfQuiz() {
+      topic = null;
+      $('topic-title').textContent = 'Whole PDF';
+      $('topic-page').textContent = doc.filename;
+      $('mode-block').classList.add('hidden');
+      $('notes-btn').classList.add('hidden');
+      $('action-row').style.gridTemplateColumns = '1fr';
+      $('ask-hint').textContent = 'Type any doubt about this PDF in your own words.';
+      clearTopicOutputs();
+      $('chips').innerHTML = '';
+      showScreen('topic');
+      makeQuiz();
+    }
+
+    function clearTopicOutputs() {
+      resetAudio();
+      ['notes-section', 'explain-section', 'quiz-section', 'answer-block'].forEach(id => $(id).classList.add('hidden'));
+      $('ask-input').value = '';
+    }
+
+    function makeNotes() {
+      run('Making your notes…', async () => {
+        const data = await api(`/api/documents/${doc.doc_id}/notes`, { topic_id: topic.id, mode: getSelected('mode') });
+        resetAudio();
+        $('notes-output').innerHTML = data.html;  // sanitized on the server
+        $('badge-mode').textContent = data.mode;
+        $('explain-section').classList.add('hidden');
+        reveal('notes-section');
+      });
+    }
+
+    function explainSimply() {
+      run('Finding the right pages in your book…', async () => {
+        const data = await api(`/api/documents/${doc.doc_id}/explain`, { topic_id: topic.id });
+        $('explain-output').innerHTML = data.html;
+        renderSources('explain-sources', data.sources);
+        reveal('explain-section');
+      });
+    }
+
+    function makeQuiz() {
+      run('Creating quiz questions…', async () => {
+        const data = await api(`/api/documents/${doc.doc_id}/quiz`, { topic_id: topic ? topic.id : null });
+        renderQuiz(data.questions);
+        reveal('quiz-section');
+      });
+    }
+
+    async function loadSuggestions(t) {
+      const chips = $('chips');
+      chips.innerHTML = '<span class="hint">Loading suggested questions…</span>';
+      try {
+        const data = await api(`/api/documents/${doc.doc_id}/suggestions`, { topic_id: t.id });
+        if (topic !== t) return;  // student already opened another topic
+        chips.innerHTML = '';
+        data.questions.forEach(q => {
+          const chip = document.createElement('button');
+          chip.className = 'chip';
+          chip.textContent = q;
+          chip.onclick = () => askQuestion(q);
+          chips.appendChild(chip);
+        });
+      } catch (err) {
+        if (topic === t) chips.innerHTML = '';
+      }
+    }
+
+    function askQuestion(preset) {
+      const question = (preset || $('ask-input').value).trim();
+      if (!question) return;
+      $('ask-input').value = question;
+      run('Searching your book…', async () => {
+        const data = await api(`/api/documents/${doc.doc_id}/ask`, { question });
+        $('answer-output').innerHTML = data.html;
+        renderSources('answer-sources', data.sources);
+        reveal('answer-block');
+      });
+    }
+
+    // ── Quiz ──
     function renderQuiz(questions) {
       quizData = questions;
       userScore = 0;
-      questionsAnswered = 0;
-      
-      document.getElementById('badge-quiz-score').textContent = 'Score: 0/' + questions.length;
-      
-      const container = document.getElementById('quiz-container');
+      $('badge-quiz-score').textContent = `Score: 0/${questions.length}`;
+
+      const container = $('quiz-container');
       container.innerHTML = '';
-      
+
       questions.forEach((q, qIdx) => {
-        const qCard = document.createElement('div');
-        qCard.className = 'quiz-question-card';
-        
-        const qText = document.createElement('div');
-        qText.className = 'quiz-question-text';
-        qText.textContent = `${qIdx + 1}. ${q.question}`;
-        qCard.appendChild(qText);
-        
-        const optionsList = document.createElement('div');
-        optionsList.className = 'quiz-options-list';
-        
+        const card = document.createElement('div');
+        card.className = 'quiz-question-card';
+
+        const text = document.createElement('div');
+        text.className = 'quiz-question-text';
+        text.textContent = `${qIdx + 1}. ${q.question}`;
+        card.appendChild(text);
+
+        const list = document.createElement('div');
+        list.className = 'quiz-options-list';
         q.options.forEach((opt, oIdx) => {
-          const optItem = document.createElement('div');
-          optItem.className = 'quiz-option-item';
-          optItem.textContent = opt;
-          optItem.onclick = () => selectQuizOption(qIdx, oIdx);
-          optionsList.appendChild(optItem);
+          const item = document.createElement('div');
+          item.className = 'quiz-option-item';
+          item.textContent = opt;
+          item.onclick = () => selectQuizOption(card, qIdx, oIdx);
+          list.appendChild(item);
         });
-        
-        qCard.appendChild(optionsList);
-        
-        const expBox = document.createElement('div');
-        expBox.className = 'quiz-explanation-box';
-        expBox.id = `explanation-${qIdx}`;
-        expBox.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
-        qCard.appendChild(expBox);
-        
-        container.appendChild(qCard);
+        card.appendChild(list);
+
+        const exp = document.createElement('div');
+        exp.className = 'quiz-explanation-box';
+        const label = document.createElement('strong');
+        label.textContent = 'Explanation:';
+        exp.append(label, document.createTextNode(q.explanation));
+        if (q.source) {
+          const src = document.createElement('div');
+          src.className = 'quiz-source';
+          src.textContent = `📖 From your PDF, page ${q.source.page}: “${q.source.text}”`;
+          exp.appendChild(src);
+        }
+        card.appendChild(exp);
+
+        container.appendChild(card);
       });
     }
 
-    function selectQuizOption(qIdx, selectedIdx) {
-      const q = quizData[qIdx];
-      const correctIdx = q.answer_idx;
-      
-      const card = document.getElementsByClassName('quiz-question-card')[qIdx];
-      const optionItems = card.getElementsByClassName('quiz-option-item');
-      
-      // If already answered, do nothing
-      if (optionItems[0].classList.contains('disabled')) return;
-      
-      // Disable all options
-      for (let i = 0; i < optionItems.length; i++) {
-        optionItems[i].classList.add('disabled');
-      }
-      
+    function selectQuizOption(card, qIdx, selectedIdx) {
+      const correctIdx = quizData[qIdx].answer_idx;
+      const items = card.getElementsByClassName('quiz-option-item');
+      if (items[0].classList.contains('disabled')) return;  // already answered
+
+      for (const item of items) item.classList.add('disabled');
       if (selectedIdx === correctIdx) {
-        // Correct choice
-        optionItems[selectedIdx].classList.add('correct');
+        items[selectedIdx].classList.add('correct');
         userScore++;
       } else {
-        // Incorrect choice
-        optionItems[selectedIdx].classList.add('incorrect');
-        optionItems[correctIdx].classList.add('correct');
+        items[selectedIdx].classList.add('incorrect');
+        items[correctIdx].classList.add('correct');
       }
-      
-      questionsAnswered++;
-      document.getElementById('badge-quiz-score').textContent = `Score: ${userScore}/${quizData.length}`;
-      
-      // Reveal explanation
-      const expBox = document.getElementById(`explanation-${qIdx}`);
-      expBox.style.display = 'block';
+      $('badge-quiz-score').textContent = `Score: ${userScore}/${quizData.length}`;
+      card.querySelector('.quiz-explanation-box').style.display = 'block';
     }
-
-    function showError(msg) {
-      const box = document.getElementById('error-box');
-      box.textContent = msg;
-      box.classList.add('show');
-    }
-    
-    function hideError() { document.getElementById('error-box').classList.remove('show'); }
 
     function copyNotes() {
-      const text = document.getElementById('notes-output').innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        const b = document.querySelectorAll('.btn-outline')[0];
-        b.textContent = 'Copied!';
-        setTimeout(() => b.textContent = 'Copy Notes', 2000);
+      navigator.clipboard.writeText($('notes-output').innerText).then(() => {
+        $('copy-btn').textContent = 'Copied!';
+        setTimeout(() => $('copy-btn').textContent = 'Copy notes', 2000);
       });
     }
 
-    function resetPage() {
-      resetAudio();
-      document.getElementById('notes-section').classList.remove('show');
-      document.getElementById('quiz-section').classList.remove('show');
-      document.getElementById('file-chosen').classList.remove('show');
-      btn.disabled = true;
-      input.value = '';
-      input._file = null;
-      currentFile = null;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ── Audio Player Functions ──
+    // ── Audio ──
     function formatTime(seconds) {
-      if (isNaN(seconds)) return '0:00';
+      if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
       const m = Math.floor(seconds / 60);
       const s = Math.floor(seconds % 60);
       return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
+    function speakableNotes() {
+      // Reading code aloud is not helpful, so leave code blocks out of the audio
+      const copy = $('notes-output').cloneNode(true);
+      copy.querySelectorAll('pre').forEach(el => el.remove());
+      return copy.textContent.replace(/\s+/g, ' ').trim();
+    }
+
     function resetAudio() {
-      if (audioObj) {
-        audioObj.pause();
-        audioObj = null;
-      }
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-        audioUrl = null;
-      }
+      if (audioObj) { audioObj.pause(); audioObj = null; }
+      if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
       isGeneratingAudio = false;
-      
-      // Reset UI elements
-      const statusText = document.getElementById('player-status');
-      if (statusText) statusText.textContent = 'Click play to listen';
-      
-      const playBtn = document.getElementById('audio-play-btn');
-      if (playBtn) playBtn.disabled = false;
-      
-      const playIcon = document.getElementById('audio-play-icon');
-      if (playIcon) playIcon.style.display = 'block';
-      
-      const pauseIcon = document.getElementById('audio-pause-icon');
-      if (pauseIcon) pauseIcon.style.display = 'none';
-      
-      const progressFill = document.getElementById('audio-progress-fill');
-      if (progressFill) progressFill.style.width = '0%';
-      
-      const curTime = document.getElementById('audio-current-time');
-      if (curTime) curTime.textContent = '0:00';
-      
-      const totTime = document.getElementById('audio-total-time');
-      if (totTime) totTime.textContent = '0:00';
-      
-      const wave = document.getElementById('audio-wave');
-      if (wave) wave.classList.remove('playing');
+      $('player-status').textContent = 'Click play to listen';
+      $('audio-play-btn').disabled = false;
+      $('audio-progress-fill').style.width = '0%';
+      $('audio-current-time').textContent = '0:00';
+      $('audio-total-time').textContent = '0:00';
+      resetAudioStateUI();
+    }
+
+    function resetAudioStateUI() {
+      $('audio-play-icon').style.display = 'block';
+      $('audio-pause-icon').style.display = 'none';
+      $('audio-wave').classList.remove('playing');
     }
 
     async function toggleAudio() {
-      const playBtn = document.getElementById('audio-play-btn');
-      const playIcon = document.getElementById('audio-play-icon');
-      const pauseIcon = document.getElementById('audio-pause-icon');
-      const statusText = document.getElementById('player-status');
-      const wave = document.getElementById('audio-wave');
-
       if (isGeneratingAudio) return;
 
       if (!audioObj) {
-        const notesText = document.getElementById('notes-output').innerText.trim();
-        if (!notesText) {
-          showError('No notes text available to read.');
-          return;
-        }
+        const text = speakableNotes();
+        if (!text) return;
 
         isGeneratingAudio = true;
-        playBtn.disabled = true;
-        statusText.textContent = 'Generating voice explanation...';
+        $('audio-play-btn').disabled = true;
+        $('player-status').textContent = 'Generating voice explanation…';
 
         try {
-          const res = await fetch('/tts', {
+          const res = await fetch('/api/tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: notesText })
+            body: JSON.stringify({ text })
           });
-
           if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.error || 'Failed to generate speech');
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || 'Failed to generate speech');
           }
-
-          const blob = await res.blob();
-          audioUrl = URL.createObjectURL(blob);
+          audioUrl = URL.createObjectURL(await res.blob());
           audioObj = new Audio(audioUrl);
-
           audioObj.addEventListener('loadedmetadata', () => {
-            document.getElementById('audio-total-time').textContent = formatTime(audioObj.duration);
+            $('audio-total-time').textContent = formatTime(audioObj.duration);
           });
-
           audioObj.addEventListener('timeupdate', () => {
             if (!audioObj) return;
-            const progress = (audioObj.currentTime / audioObj.duration) * 100;
-            document.getElementById('audio-progress-fill').style.width = `${progress}%`;
-            document.getElementById('audio-current-time').textContent = formatTime(audioObj.currentTime);
+            $('audio-progress-fill').style.width = `${(audioObj.currentTime / audioObj.duration) * 100}%`;
+            $('audio-current-time').textContent = formatTime(audioObj.currentTime);
           });
-
           audioObj.addEventListener('ended', () => {
             resetAudioStateUI();
-            statusText.textContent = 'Finished listening';
+            $('player-status').textContent = 'Finished listening';
           });
-
-          audioObj.addEventListener('error', () => {
-            showError('Error during audio playback.');
-            resetAudio();
-          });
-
-          isGeneratingAudio = false;
-          playBtn.disabled = false;
-
         } catch (err) {
-          isGeneratingAudio = false;
-          playBtn.disabled = false;
-          statusText.textContent = 'Speech generation failed';
-          showError(err.message || 'Error converting text to speech.');
+          $('player-status').textContent = 'Speech generation failed';
+          showToast(err.message, true);
           return;
+        } finally {
+          isGeneratingAudio = false;
+          $('audio-play-btn').disabled = false;
         }
       }
 
       if (audioObj.paused) {
         audioObj.play().then(() => {
-          playIcon.style.display = 'none';
-          pauseIcon.style.display = 'block';
-          statusText.textContent = 'Playing explanation';
-          wave.classList.add('playing');
+          $('audio-play-icon').style.display = 'none';
+          $('audio-pause-icon').style.display = 'block';
+          $('player-status').textContent = 'Playing';
+          $('audio-wave').classList.add('playing');
         }).catch(err => {
-          showError('Unable to play audio: ' + err.message);
+          showToast('Unable to play audio: ' + err.message, true);
           resetAudio();
         });
       } else {
         audioObj.pause();
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-        statusText.textContent = 'Paused';
-        wave.classList.remove('playing');
+        resetAudioStateUI();
+        $('player-status').textContent = 'Paused';
       }
-    }
-
-    function resetAudioStateUI() {
-      document.getElementById('audio-play-icon').style.display = 'block';
-      document.getElementById('audio-pause-icon').style.display = 'none';
-      document.getElementById('audio-wave').classList.remove('playing');
     }
 
     function seekAudio(e) {
       if (!audioObj || isNaN(audioObj.duration)) return;
-      const rect = document.getElementById('audio-progress-bg').getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const width = rect.width;
-      const percentage = clickX / width;
-      audioObj.currentTime = percentage * audioObj.duration;
+      const rect = $('audio-progress-bg').getBoundingClientRect();
+      audioObj.currentTime = ((e.clientX - rect.left) / rect.width) * audioObj.duration;
     }
+
+    // ── On page load: reopen the last PDF if it is still on the server ──
+    (async () => {
+      const savedId = storage('get');
+      if (!savedId) return;
+      try {
+        openDocument(await api(`/api/documents/${savedId}`));
+      } catch (e) {
+        storage('remove');
+      }
+    })();
   </script>
 
 </body>

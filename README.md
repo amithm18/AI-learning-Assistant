@@ -5,28 +5,33 @@ An AI-powered interactive study web application designed to help Computer Scienc
 ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0+-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![Groq](https://img.shields.io/badge/Groq-Llama%203.3%2070B-f34f29?style=for-the-badge)
+![RAG](https://img.shields.io/badge/RAG-fastembed%20%2B%20numpy-8B5CF6?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
 
 ## 🌟 Overview
 
-Studying Computer Science requires understanding complex algorithms, code syntax, architectural concepts, and exam questions. The **AI Computer Science Learning Assistant** simplifies this process by parsing uploaded PDF chapters, analyzing line heights and section headers, and generating context-preserving study notes customized to your learning goals.
+Many students have never used an AI tool and don't know how to write a prompt. This app removes the prompt entirely:
+upload a chapter PDF, tap a topic, and tap a button. Everything the student gets (notes, quizzes, simpler explanations,
+answers to doubts) comes **only from their own PDF, with page numbers** to check it against the book.
 
-Whether you are learning a programming concept for the first time, preparing for upcoming board exams, or conducting a deep-dive analysis into system architecture, this tool generates instant notes, interactive quizzes, and playable audio.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it works and why it is designed this way.
 
 ---
 
 ## ✨ Features
 
-- 📄 **Layout-Aware PDF Extraction**: Employs `pdfplumber` to extract text while maintaining font size variation, line breaks, code blocks, and structural heading boundaries.
-- 🎯 **3 Tailored AI Learning Modes**:
-  - 🚀 **Beginner Mode**: Simple, jargon-free explanations, real-world analogies (e.g. memory boxes, post offices), and commented code breakdowns.
-  - 🎯 **Exam Ready Mode**: Precise definitions, high-yield syntax templates, and probable 2-mark & 5-mark board exam questions.
-  - 🔬 **Deep Dive Mode**: Architectural insights, time and space complexity ($O(n)$ notation) analysis, step-by-step trace tables, and real-world system applications.
-- ❓ **Interactive Quiz Generator**: Automatically creates 5 multiple-choice questions (MCQs) evenly distributed across PDF content, featuring real-time option checking and detailed explanation boxes.
-- 🔊 **Text-to-Speech (TTS) Audio Lessons**: Converts generated notes into smooth MP3 audio using Google Text-to-Speech (`gTTS`), enabling on-the-go audio learning.
-- 🎨 **Glassmorphism UI**: Built with a dark mode aesthetic, smooth CSS glowing animations, VS Code-style syntax-highlighted code blocks, and full responsiveness.
+- 📚 **Automatic topic list**: the PDF's headings are detected from font size and boldness, so the chapter is split into topics the student can tap, like a table of contents.
+- 🎯 **3 learning modes for notes**:
+  - 🌱 **Beginner**: simple language, everyday analogies, commented code.
+  - 📝 **Exam Ready**: precise definitions, syntax, and likely 2-mark and 5-mark questions.
+  - 🔬 **Deep Dive**: complexity analysis, trace tables, how things work underneath.
+- ⚡ **Quiz per topic or for the whole PDF**: 5 validated MCQs with shuffled options. After answering, the student sees the explanation and **the passage and page in the book** it came from.
+- 🤔 **"I didn't understand this"**: one tap re-explains the topic more simply, using the most relevant passages found anywhere in the book (RAG).
+- 💬 **Ask a doubt without prompting**: tap one of the suggested questions, or type a doubt in any words. The answer is built only from matching passages of the PDF and cites page numbers (RAG).
+- 🔊 **Listen to notes**: Text-to-Speech audio (gTTS), skipping code blocks.
+- ⚡ **Fast and cheap**: the PDF is processed once; notes are cached per topic and mode.
 
 ---
 
@@ -34,12 +39,14 @@ Whether you are learning a programming concept for the first time, preparing for
 
 | Component | Technology / Library |
 | :--- | :--- |
-| **Backend Framework** | [Flask](https://flask.palletsprojects.com/) (Python 3.8+) |
-| **AI Model & Inference** | [Groq SDK](https://groq.com/) (`llama-3.3-70b-versatile`) |
-| **PDF Extraction Engine** | [pdfplumber](https://github.com/jsvine/pdfplumber), `pdfminer.six` |
-| **Audio Synthesis** | [gTTS](https://github.com/pndurette/gTTS) (Google Text-to-Speech) |
-| **Markdown Rendering** | `Python-Markdown` with extended code formatting |
-| **Frontend UI** | HTML5, Modern CSS3 (Glassmorphism, CSS Tokens), Vanilla JS (Fetch API) |
+| **Backend** | [Flask](https://flask.palletsprojects.com/) (Python 3.10+) |
+| **LLM** | [Groq](https://groq.com/) (`llama-3.3-70b-versatile`) |
+| **PDF parsing** | [pdfplumber](https://github.com/jsvine/pdfplumber) |
+| **Embeddings (RAG)** | [fastembed](https://github.com/qdrant/fastembed) with `BAAI/bge-small-en-v1.5`, running locally |
+| **Vector search** | numpy (cosine similarity) |
+| **HTML sanitising** | [nh3](https://github.com/messense/nh3) |
+| **Audio** | [gTTS](https://github.com/pndurette/gTTS) |
+| **Frontend** | HTML, CSS, vanilla JavaScript |
 
 ---
 
@@ -47,21 +54,20 @@ Whether you are learning a programming concept for the first time, preparing for
 
 ```
 AI-learning-assistant/
-│
-├── app.py                      # Core Flask server handling web routes & API endpoints
+├── app.py                    # Flask API: upload once, then notes / quiz / explain / ask / tts
 ├── utils/
-│   ├── pdf_reader.py           # Intelligent layout analysis, heading detection & PDF chunking
-│   └── summarizer.py           # Groq LLM prompt pipelines, note generators & quiz builders
-│
-├── templates/
-│   └── index.html              # Responsive single-page interface with tab navigation & audio player
-│
-├── uploads/                    # Temporary storage for uploaded PDF files during processing
-├── .env                        # Private environment variables (API Keys - ignored by git)
-├── .env.example                # Configuration template for environment variables
-├── .gitignore                  # Files and directories ignored by Git
-├── requirements.txt            # Python dependencies
-└── README.md                   # Project documentation
+│   ├── pdf_reader.py         # PDF -> topics (heading detection, page numbers, header/footer removal)
+│   ├── chunker.py            # topics -> ~200-word overlapping chunks for search
+│   ├── retriever.py          # embeddings + cosine-similarity search (the "R" in RAG)
+│   ├── document_store.py     # saves topics, chunks, vectors and cached AI output in data/<doc_id>/
+│   └── llm.py                # every prompt sent to Groq
+├── templates/index.html      # single page: upload -> topic list -> topic page
+├── tests/                    # pytest unit tests (chunking, quiz validation, search)
+├── docs/ARCHITECTURE.md      # design explanation
+├── data/                     # created at runtime, ignored by git
+├── .env.example
+├── requirements.txt
+└── requirements-dev.txt
 ```
 
 ---
@@ -71,13 +77,13 @@ AI-learning-assistant/
 Follow these steps to get the project running on your local machine:
 
 ### 1. Prerequisites
-- **Python 3.8** or higher installed on your system.
+- **Python 3.10** or higher installed on your system.
 - A free **Groq API Key** (Get one at [console.groq.com](https://console.groq.com/)).
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/your-username/AI-learning-assistant.git
-cd AI-learning-assistant
+git clone https://github.com/amithm18/AI-learning-Assistant.git
+cd AI-learning-Assistant
 ```
 
 ### 3. Create & Activate a Virtual Environment
@@ -112,6 +118,7 @@ GROQ_API_KEY=your_actual_groq_api_key_here
 ```bash
 python app.py
 ```
+The first upload downloads the small embedding model (~130MB) once, so it takes longer than later uploads.
 Open your browser and navigate to:
 ```
 http://127.0.0.1:5000
@@ -121,23 +128,37 @@ http://127.0.0.1:5000
 
 ## 📖 How to Use
 
-1. **Select Learning Mode**: Choose between **Beginner**, **Exam Ready**, or **Deep Dive** depending on your study goals.
-2. **Upload PDF**: Drag & drop or browse to select your Computer Science PDF document (max size: 16MB).
-3. **Generate Notes / Quiz**:
-   - Click **Generate Study Notes** to extract structured markdown notes with code snippets.
-   - Click **Generate Interactive Quiz** to solve 5 auto-generated multiple-choice questions.
-4. **Listen to Notes**: Use the built-in custom audio player to stream Text-to-Speech audio explanations.
+1. **Upload** your Computer Science chapter PDF (max 16MB). The app finds its topics.
+2. **Tap a topic** from the list.
+3. Pick **Beginner**, **Exam Ready** or **Deep Dive**, then tap **Make notes** or **Quiz me**.
+4. Didn't get it? Tap **I didn't understand this** for a simpler explanation.
+5. Have a doubt? Tap a suggested question or type your own. Every answer shows the pages it came from.
+6. Tap ▶ on the notes to listen to them.
 
 ---
 
-## 🔌 API Endpoints Reference
+## 🔌 API Endpoints
 
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
-| `/` | `GET` | Renders the main Web UI dashboard |
-| `/upload` | `POST` | Accepts a PDF file & mode parameter, extracts text, and returns formatted HTML study notes |
-| `/quiz` | `POST` | Accepts a PDF file and returns 5 structured JSON multiple-choice questions with explanations |
-| `/tts` | `POST` | Accepts JSON text and returns an MP3 audio binary stream generated via Google TTS |
+| `/` | `GET` | The web app |
+| `/api/documents` | `POST` | Upload a PDF (`pdf_file`). Returns `doc_id` and the topic list |
+| `/api/documents/<doc_id>` | `GET` | Topic list for an uploaded PDF |
+| `/api/documents/<doc_id>/notes` | `POST` | `{topic_id, mode}` → notes HTML (cached) |
+| `/api/documents/<doc_id>/quiz` | `POST` | `{topic_id}` or `{topic_id: null}` for the whole PDF → 5 MCQs with source page |
+| `/api/documents/<doc_id>/explain` | `POST` | `{topic_id}` → simpler explanation + sources (RAG) |
+| `/api/documents/<doc_id>/suggestions` | `POST` | `{topic_id}` → 3 clickable questions (cached) |
+| `/api/documents/<doc_id>/ask` | `POST` | `{question}` → answer + sources (RAG) |
+| `/api/tts` | `POST` | `{text}` → MP3 audio |
+
+---
+
+## 🧪 Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
 
 ---
 
@@ -155,7 +176,7 @@ Contributions are welcome! If you'd like to improve the PDF extraction algorithm
 
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License.
 
 ---
 
