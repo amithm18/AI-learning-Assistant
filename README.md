@@ -75,7 +75,7 @@ Follow these steps to get the project running on your local machine:
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/your-username/AI-learning-assistant.git
+git clone https://github.com/amithm18/AI-learning-assistant.git
 cd AI-learning-assistant
 ```
 
