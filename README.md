@@ -2,11 +2,10 @@
 
 An AI-powered interactive study web application designed to help Computer Science students transform dense PDF textbooks, lecture notes, and syllabus materials into structured study notes, interactive quizzes, and Text-to-Speech (TTS) audio lessons.
 
-![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0+-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![Groq](https://img.shields.io/badge/Groq-Llama%203.3%2070B-f34f29?style=for-the-badge)
 ![RAG](https://img.shields.io/badge/RAG-fastembed%20%2B%20numpy-8B5CF6?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
 
@@ -82,8 +81,8 @@ Follow these steps to get the project running on your local machine:
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/amithm18/AI-learning-Assistant.git
-cd AI-learning-Assistant
+git clone https://github.com/amithm18/AI-learning-assistant.git
+cd AI-learning-assistant
 ```
 
 ### 3. Create & Activate a Virtual Environment
