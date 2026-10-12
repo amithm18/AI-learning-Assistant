@@ -18,5 +18,5 @@ data/
 .idea/
 .DS_Store
 
-
-docs/ARCHITECTURE.md
+# Personal interview prep notes (not part of the project)
+docs/INTERVIEW_NOTES.md

@@ -1,5 +1,5 @@
 """
-Step 4 of the pipeline: all calls to the LLM (Groq, Llama 3.3 70B).
+Step 4 of the pipeline: all calls to the LLM (Groq; the model is set by GROQ_MODEL, with fallbacks).
 
 The student never writes a prompt. Every button in the UI maps to one function
 here, and each function builds the full prompt itself:

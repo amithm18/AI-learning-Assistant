@@ -26,10 +26,12 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it works and why it is 
   - 🌱 **Beginner**: simple language, everyday analogies, commented code.
   - 📝 **Exam Ready**: precise definitions, syntax, and likely 2-mark and 5-mark questions.
   - 🔬 **Deep Dive**: complexity analysis, trace tables, how things work underneath.
-- ⚡ **Quiz per topic or for the whole PDF**: 5 validated MCQs with shuffled options. After answering, the student sees the explanation and **the passage and page in the book** it came from.
+- ⚡ **Quiz per topic or for the whole PDF**: 5 validated MCQs, one at a time. After each answer the student sees the explanation and **the passage and page in the book** it came from. At the end: retry the same questions or practise only the wrong ones (no extra AI calls).
 - 🤔 **"I didn't understand this"**: one tap re-explains the topic more simply, using the most relevant passages found anywhere in the book (RAG).
 - 💬 **Ask a doubt without prompting**: tap one of the suggested questions, or type a doubt in any words. The answer is built only from matching passages of the PDF and cites page numbers (RAG).
 - 🔊 **Listen to notes**: Text-to-Speech audio (gTTS), skipping code blocks.
+- ✅ **Progress tracking**: mark topics as done and see your best quiz score per topic.
+- 🌗 **Calm study design**: a light reading theme with an optional dark mode, Notes / Quiz / Ask tabs instead of one long page, keyboard and screen-reader friendly.
 - ⚡ **Fast and cheap**: the PDF is processed once; notes are cached per topic and mode.
 
 ---
@@ -129,10 +131,11 @@ http://127.0.0.1:5000
 
 1. **Upload** your Computer Science chapter PDF (max 16MB). The app finds its topics.
 2. **Tap a topic** from the list.
-3. Pick **Beginner**, **Exam Ready** or **Deep Dive**, then tap **Make notes** or **Quiz me**.
+3. **Notes tab**: pick **Beginner**, **Exam Ready** or **Deep Dive** and tap **Make notes**. Tap ▶ to listen to them.
 4. Didn't get it? Tap **I didn't understand this** for a simpler explanation.
-5. Have a doubt? Tap a suggested question or type your own. Every answer shows the pages it came from.
-6. Tap ▶ on the notes to listen to them.
+5. **Quiz tab**: answer 5 questions one at a time, then retry or practise the ones you got wrong.
+6. **Ask tab**: tap a suggested question or type your own doubt. Every answer shows the pages it came from.
+7. Tap **Mark as done** when you've finished a topic. Next time, **Continue where you left off** takes you back.
 
 ---
 
