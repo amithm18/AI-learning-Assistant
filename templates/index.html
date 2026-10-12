@@ -6,13 +6,16 @@
   <title>AI Computer Science Study Assistant</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
   <script>
-    // Runs before the page is drawn: apply the saved theme, and start with the small
-    // header if a PDF is already open (so the big header doesn't flash on reload)
+    // Runs before the page is drawn: apply the saved theme. If this is a refresh of a tab
+    // that was inside a PDF, start with the small header (so the big one doesn't flash).
+    // A fresh visit always starts on the upload screen.
     (function () {
       try {
         var theme = localStorage.getItem('theme');
         if (theme) document.documentElement.dataset.theme = theme;
-        if (localStorage.getItem('doc_id')) document.documentElement.classList.add('compact', 'no-anim', 'restoring');
+        if (sessionStorage.getItem('view') && localStorage.getItem('doc_id')) {
+          document.documentElement.classList.add('compact', 'no-anim', 'restoring');
+        }
       } catch (e) {}
     })();
   </script>
@@ -71,12 +74,14 @@
       --code-bg: #0E1018;
       --focus: #A5A0FF;
 
-      --sky-top: #2B2448;
-      --sky-bottom: #1B1D2A;
-      --dusk-top: #3A2440;
+      --sky-top: #121735;
+      --sky-bottom: #1D1B36;
+      --dusk-top: #161A3A;
       --dusk-bottom: #1A1D27;
       --sun: #FFB547;
       --sun-glow: rgba(255, 170, 70, 0.22);
+      --moon: #F2EFE0;
+      --moon-glow: rgba(242, 239, 224, 0.14);
       --mountain-back: #3B3772;
       --mountain-front: #5650AE;
 
@@ -146,6 +151,46 @@
     }
     .sun { fill: var(--sun); }
     .sun-glow { fill: var(--sun-glow); }
+    .moon { fill: var(--moon); }
+    .moon-glow { fill: var(--moon-glow); }
+
+    /* Light theme shows the sun. Dark theme: the sun sinks behind the mountains,
+       then the moon rises (and the other way round when switching back) */
+    .sun-body, .moon-body {
+      transition: transform 0.9s cubic-bezier(0.5, 0, 0.3, 1), opacity 0.9s ease;
+    }
+    .sun-body { transition-delay: 0.4s; }
+    .moon-body { transform: translateY(150px); opacity: 0; transition-delay: 0s; }
+    :root[data-theme="dark"] .sun-body { transform: translateY(150px); opacity: 0; transition-delay: 0s; }
+    :root[data-theme="dark"] .moon-body { transform: none; opacity: 1; transition-delay: 0.4s; }
+
+    .stars {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1s ease;
+      background-image:
+        radial-gradient(circle at 6% 22%, #FFF 0 1.2px, transparent 1.8px),
+        radial-gradient(circle at 14% 58%, #FFF 0 1px, transparent 1.6px),
+        radial-gradient(circle at 22% 12%, #FFF 0 1.4px, transparent 2px),
+        radial-gradient(circle at 31% 40%, #FFF 0 1px, transparent 1.6px),
+        radial-gradient(circle at 39% 8%, #FFF 0 1.2px, transparent 1.8px),
+        radial-gradient(circle at 47% 30%, #FFF 0 0.9px, transparent 1.5px),
+        radial-gradient(circle at 56% 14%, #FFF 0 1.3px, transparent 1.9px),
+        radial-gradient(circle at 64% 46%, #FFF 0 1px, transparent 1.6px),
+        radial-gradient(circle at 72% 20%, #FFF 0 1.2px, transparent 1.8px),
+        radial-gradient(circle at 81% 9%, #FFF 0 1px, transparent 1.6px),
+        radial-gradient(circle at 88% 36%, #FFF 0 1.4px, transparent 2px),
+        radial-gradient(circle at 95% 16%, #FFF 0 1px, transparent 1.6px);
+    }
+    :root[data-theme="dark"] .stars {
+      opacity: 1;
+      animation: twinkle 3.5s ease-in-out 1s infinite alternate;
+    }
+    @keyframes twinkle {
+      from { opacity: 1; }
+      to { opacity: 0.55; }
+    }
 
     .mountains {
       transform-box: view-box;
@@ -215,6 +260,11 @@
       border-radius: 50%;
       background: var(--sun);
       box-shadow: 0 0 0 4px var(--sun-glow);
+      transition: background-color 0.6s, box-shadow 0.6s;
+    }
+    :root[data-theme="dark"] .bar-brand-dot {
+      background: var(--moon);
+      box-shadow: 0 0 0 4px var(--moon-glow);
     }
 
     .theme-toggle {
@@ -371,6 +421,21 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Continue card (last PDF) ── */
+    .continue-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 20px 24px;
+      margin-bottom: 18px;
+      border-left: 4px solid var(--accent);
+    }
+    .continue-name { font-size: 18px; font-weight: 700; word-break: break-word; }
+    .continue-meta { font-size: 15px; color: var(--muted); }
+    .continue-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
     /* ── Upload ── */
     .drop-zone {
@@ -848,6 +913,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition: none !important; animation-duration: 1.5s !important; }
+      :root[data-theme="dark"] .stars { animation: none; }
     }
   </style>
 </head>
@@ -856,11 +922,25 @@
   <header class="site-header">
     <div class="sky"></div>
     <div class="dusk"></div>
+    <div class="stars"></div>
 
     <svg class="scene" viewBox="0 0 1440 200" aria-hidden="true" focusable="false">
+      <defs>
+        <!-- a full circle minus an offset circle = crescent moon -->
+        <mask id="crescent">
+          <circle cx="860" cy="98" r="34" fill="white"/>
+          <circle cx="876" cy="86" r="30" fill="black"/>
+        </mask>
+      </defs>
       <g class="sun-group">
-        <circle class="sun-glow" cx="860" cy="98" r="64"/>
-        <circle class="sun" cx="860" cy="98" r="38"/>
+        <g class="sun-body">
+          <circle class="sun-glow" cx="860" cy="98" r="64"/>
+          <circle class="sun" cx="860" cy="98" r="38"/>
+        </g>
+        <g class="moon-body">
+          <circle class="moon-glow" cx="860" cy="98" r="56"/>
+          <circle class="moon" cx="860" cy="98" r="34" mask="url(#crescent)"/>
+        </g>
       </g>
       <g class="mountains">
         <path class="mountain-back" d="M0,200 L0,118 C90,110 170,92 270,96 C370,100 440,78 540,82 C620,85 670,64 720,66 C780,68 815,128 860,132 C905,136 950,66 1010,60 C1080,54 1150,92 1230,95 C1310,98 1380,80 1440,84 L1440,200 Z"/>
@@ -886,6 +966,18 @@
 
     <!-- ── Screen 1: upload ── -->
     <section id="upload-screen" aria-labelledby="upload-title">
+      <div class="card continue-card" id="continue-card" hidden>
+        <div>
+          <p class="eyebrow">Continue where you left off</p>
+          <p class="continue-name" id="continue-name"></p>
+          <p class="continue-meta" id="continue-meta"></p>
+        </div>
+        <div class="continue-actions">
+          <button class="btn primary" type="button" onclick="continueDocument()">Continue →</button>
+          <button class="btn ghost" id="forget-btn" type="button" onclick="forgetDocument()">Remove</button>
+        </div>
+      </div>
+
       <div class="card">
         <h2 class="card-title" id="upload-title">Upload your chapter PDF</h2>
         <p class="card-sub">We'll find the topics in it. Then you pick one to study.</p>
@@ -1106,6 +1198,18 @@
       remove(key) { try { localStorage.removeItem(key); } catch (e) {} }
     };
 
+    // Where the student is right now (topic list or a topic). sessionStorage survives a
+    // refresh of this tab, but is empty in a new tab, so a new visit starts at upload.
+    function saveView(view) {
+      try { sessionStorage.setItem('view', JSON.stringify(view)); } catch (e) {}
+    }
+    function readView() {
+      try { return JSON.parse(sessionStorage.getItem('view')); } catch (e) { return null; }
+    }
+    function clearView() {
+      try { sessionStorage.removeItem('view'); } catch (e) {}
+    }
+
     // ── Small helpers ──
     async function api(path, body) {
       const options = body === undefined ? {} : {
@@ -1204,9 +1308,9 @@
     }
 
     // ── Progress (saved in this browser, per PDF) ──
-    function getProgress() {
+    function getProgress(docId = doc.doc_id) {
       try {
-        return JSON.parse(store.get(`progress:${doc.doc_id}`)) || { done: {}, best: {} };
+        return JSON.parse(store.get(`progress:${docId}`)) || { done: {}, best: {} };
       } catch (e) {
         return { done: {}, best: {} };
       }
@@ -1297,9 +1401,10 @@
 
     function resetToUpload() {
       resetAudio();
-      doc = null;
+      // Keep the current PDF one tap away, in case the student comes back to it
+      if (doc) showContinueCard(doc);
       topic = null;
-      store.remove('doc_id');
+      clearView();
       input.value = '';
       input._file = null;
       $('file-chosen').hidden = true;
@@ -1307,18 +1412,44 @@
       showScreen('upload');
     }
 
+    // ── "Continue where you left off" ──
+    let lastDoc = null;
+
+    function showContinueCard(data) {
+      lastDoc = data;
+      const done = Object.keys(getProgress(data.doc_id).done).length;
+      $('continue-name').textContent = data.filename;
+      $('continue-meta').textContent = `${done} of ${data.topics.length} topics done`;
+      $('forget-btn').setAttribute('aria-label', `Remove ${data.filename} from this list`);
+      $('continue-card').hidden = false;
+    }
+
+    function continueDocument() {
+      openDocument(lastDoc);
+    }
+
+    function forgetDocument() {
+      store.remove('doc_id');
+      lastDoc = null;
+      $('continue-card').hidden = true;
+      $('pdf-input').focus();
+    }
+
     // ── Screen 2: topic list ──
     function openDocument(data) {
       doc = data;
       store.set('doc_id', data.doc_id);
+      $('continue-card').hidden = true;
       $('doc-name').textContent = data.filename;
       renderTopics();
+      saveView({ screen: 'topics' });
       showScreen('topics');
     }
 
     function showTopics() {
       resetAudio();
       renderTopics();
+      saveView({ screen: 'topics' });
       showScreen('topics');
     }
 
@@ -1406,6 +1537,7 @@
       $('ask-hint').textContent = 'Tap a question, or type your doubt in your own words.';
       updateDoneToggle();
       selectTab('notes');
+      saveView({ screen: 'topic', topic_id: t.id });
       showScreen('topic');
       loadSuggestions(t);
     }
@@ -1421,6 +1553,7 @@
       $('ask-hint').textContent = 'Type any doubt about this PDF in your own words.';
       $('chips').innerHTML = '';
       selectTab('quiz');
+      saveView({ screen: 'topics' });  // a refresh goes back to the topic list, not a new quiz
       showScreen('topic');
       newQuiz();
     }
@@ -1793,14 +1926,27 @@
     (async () => {
       const root = document.documentElement;
       const savedId = store.get('doc_id');
+      const view = readView();
+
+      let saved = null;
       if (savedId) {
-        // Reopen the last PDF if it is still on the server
         try {
-          openDocument(await api(`/api/documents/${savedId}`));
+          saved = await api(`/api/documents/${savedId}`);
         } catch (e) {
-          store.remove('doc_id');
-          showScreen('upload');
+          store.remove('doc_id');  // no longer on the server
         }
+      }
+
+      if (saved && view) {
+        // This tab was refreshed: go back to the same place
+        openDocument(saved);
+        const t = view.screen === 'topic' && saved.topics.find(t => t.id === view.topic_id);
+        if (t) openTopic(t);
+      } else {
+        // A new visit: always start at upload, with the last PDF one tap away
+        clearView();
+        if (root.classList.contains('compact')) showScreen('upload');
+        if (saved) showContinueCard(saved);
       }
       root.classList.remove('restoring');
       // Turn header animations back on after the first frame is drawn
