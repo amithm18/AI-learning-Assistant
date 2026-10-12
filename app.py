@@ -272,6 +272,23 @@ def rate_limited(e):
     return _error("The AI service is busy right now. Please wait a minute and try again.", 429)
 
 
+@app.errorhandler(groq.AuthenticationError)
+def auth_error(e):
+    return _error("Invalid Groq API key. Please check your GROQ_API_KEY in .env.", 401)
+
+
+@app.errorhandler(groq.NotFoundError)
+def model_not_found_error(e):
+    return _error("The configured AI model was not found on Groq. Please check GROQ_MODEL in .env.", 404)
+
+
+@app.errorhandler(groq.APIError)
+def groq_api_error(e):
+    log.exception("Groq API error")
+    msg = getattr(e, "message", None) or str(e)
+    return _error(f"AI service error: {msg}", 502)
+
+
 @app.errorhandler(llm.MissingApiKey)
 def missing_api_key(e):
     return _error("The server has no GROQ_API_KEY. Copy .env.example to .env and add your key.", 500)

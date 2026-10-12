@@ -17,3 +17,6 @@ data/
 .vscode/
 .idea/
 .DS_Store
+
+
+docs/ARCHITECTURE.md

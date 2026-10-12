@@ -4,7 +4,7 @@ An AI-powered interactive study web application designed to help Computer Scienc
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0+-000000?style=for-the-badge&logo=flask&logoColor=white)
-![Groq](https://img.shields.io/badge/Groq-Llama%203.3%2070B-f34f29?style=for-the-badge)
+![Groq](https://img.shields.io/badge/Groq-GPT%20OSS%20120B-f34f29?style=for-the-badge)
 ![RAG](https://img.shields.io/badge/RAG-fastembed%20%2B%20numpy-8B5CF6?style=for-the-badge)
 
 ---
@@ -39,7 +39,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it works and why it is 
 | Component | Technology / Library |
 | :--- | :--- |
 | **Backend** | [Flask](https://flask.palletsprojects.com/) (Python 3.10+) |
-| **LLM** | [Groq](https://groq.com/) (`llama-3.3-70b-versatile`) |
+| **LLM** | [Groq](https://groq.com/) (`openai/gpt-oss-120b`) |
 | **PDF parsing** | [pdfplumber](https://github.com/jsvine/pdfplumber) |
 | **Embeddings (RAG)** | [fastembed](https://github.com/qdrant/fastembed) with `BAAI/bge-small-en-v1.5`, running locally |
 | **Vector search** | numpy (cosine similarity) |

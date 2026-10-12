@@ -16,11 +16,20 @@ import os
 import random
 import re
 
+import groq
 from groq import Groq
 
 log = logging.getLogger(__name__)
 
-MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+DEFAULT_MODEL = "openai/gpt-oss-120b"
+FALLBACK_MODELS = [
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
+    "llama-3.3-70b-versatile",
+]
+
+MODEL = os.getenv("GROQ_MODEL", DEFAULT_MODEL)
 
 AUDIENCE = (
     "You are an expert Computer Science teacher for PU (Pre-University) students in India. "
@@ -46,15 +55,39 @@ def _get_client():
 
 
 def _chat(prompt, temperature=0.1, max_tokens=2000, json_mode=False):
+    client = _get_client()
     kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
-    response = _get_client().chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=temperature,
-        max_tokens=max_tokens,
-        **kwargs,
-    )
-    return response.choices[0].message.content
+    preferred_model = os.getenv("GROQ_MODEL") or MODEL or DEFAULT_MODEL
+    models_to_try = [preferred_model]
+    for fb in FALLBACK_MODELS:
+        if fb not in models_to_try:
+            models_to_try.append(fb)
+
+    last_err = None
+    for model_name in models_to_try:
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **kwargs,
+            )
+            return response.choices[0].message.content
+        except groq.NotFoundError as err:
+            log.warning("Model '%s' not found on Groq, trying next fallback...", model_name)
+            last_err = err
+            continue
+        except groq.BadRequestError as err:
+            if "decommissioned" in str(err).lower():
+                log.warning("Model '%s' is decommissioned on Groq, trying next fallback...", model_name)
+                last_err = err
+                continue
+            raise
+
+    if last_err is not None:
+        raise last_err
+    raise RuntimeError("No working Groq model available.")
 
 
 # ── Output cleanup ────────────────────────────────────────────────────────────
