@@ -163,6 +163,8 @@
     .moon-body { transform: translateY(150px); opacity: 0; transition-delay: 0s; }
     :root[data-theme="dark"] .sun-body { transform: translateY(150px); opacity: 0; transition-delay: 0s; }
     :root[data-theme="dark"] .moon-body { transform: none; opacity: 1; transition-delay: 0.4s; }
+    /* In the small bar the moon sits higher than the setting sun, so more than half of it shows */
+    :root.compact[data-theme="dark"] .moon-body { transform: translateY(-30px); }
 
     .stars {
       position: absolute;
@@ -929,7 +931,7 @@
         <!-- a full circle minus an offset circle = crescent moon -->
         <mask id="crescent">
           <circle cx="860" cy="98" r="34" fill="white"/>
-          <circle cx="876" cy="86" r="30" fill="black"/>
+          <circle cx="876" cy="112" r="30" fill="black"/>
         </mask>
       </defs>
       <g class="sun-group">
