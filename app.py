@@ -14,6 +14,7 @@ Flask server. Flow:
 import io
 import logging
 import os
+import re
 
 import groq
 import markdown
@@ -225,7 +226,31 @@ def _snippet(text, limit=280):
 
 def _to_html(md_text):
     # The LLM's output is untrusted: strip any script/style/event handlers before sending
-    return nh3.clean(markdown.markdown(md_text, extensions=["extra", "fenced_code"]))
+    html = markdown.markdown(fix_markdown_lists(md_text), extensions=["extra", "fenced_code"])
+    return nh3.clean(html)
+
+
+LIST_ITEM = re.compile(r"^(\s*)([-*+]|\d+\.) ")
+
+
+def fix_markdown_lists(md_text):
+    """
+    The LLM writes lists the way most chat apps accept, but Python-Markdown is stricter:
+    it needs a blank line before a list, and 4 spaces (not 2) to nest a sub-point.
+    Code blocks are left exactly as they are.
+    """
+    lines, in_code = [], False
+    for line in md_text.split("\n"):
+        if line.lstrip().startswith("```"):
+            in_code = not in_code
+        elif not in_code:
+            item = LIST_ITEM.match(line)
+            if item:
+                line = " " * (len(item.group(1)) // 2 * 4) + line.lstrip()
+                if lines and lines[-1].strip() and not LIST_ITEM.match(lines[-1]):
+                    lines.append("")
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def _error(message, status):
